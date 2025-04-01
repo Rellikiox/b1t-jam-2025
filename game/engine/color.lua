@@ -62,7 +62,7 @@ end
 
 local Color = Object:extend()
 
-function Color:init(r, g, b, a)
+function Color:new(r, g, b, a)
 	self.r = r
 	self.g = g
 	self.b = b

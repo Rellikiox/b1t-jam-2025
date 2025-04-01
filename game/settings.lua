@@ -1,1 +1,1 @@
-return { debug = { log_events = true, draw_boids = false } }
+return { debug = { log_events = false, draw_boids = false } }
