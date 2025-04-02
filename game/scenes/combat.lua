@@ -1,4 +1,5 @@
 local Events = require 'engine.events'
+local Enemy = require 'game.enemy'
 
 local Metronome = Object:extend()
 
@@ -66,10 +67,14 @@ function combat:enter(previous, ...)
 			0, i * quad_height, quad_width, quad_height, spritesheet:getDimensions()
 		)
 	end
+
+	self.enemies = Enemy.EnemyManager()
+	self.enemies:spawn_enemy()
 end
 
 function combat:update(delta)
 	self.metronome:update(delta)
+	self.enemies:update(delta)
 end
 
 function combat:leave(next, ...)
@@ -88,11 +93,16 @@ function combat:draw()
 	)
 
 	love.graphics.print(self.metronome.bpm + 10, 39, 2)
+
+	self.enemies:draw()
 end
 
 function combat:mousepressed(x, y, button)
 	if button == 1 then
-		if self.metronome:time_to_beat() < 0.2 then
+		local x, y = screen:getMousePosition()
+		local enemy_under_mouse = self.enemies:get_enemy_at(x, y)
+		local on_beat = self.metronome:time_to_beat() < 0.2
+		if on_beat and enemy_under_mouse then
 			-- play sound
 			assets.sounds.successful_hit:play()
 			self.successful_hits = self.successful_hits + 1
@@ -100,6 +110,7 @@ function combat:mousepressed(x, y, button)
 				self.metronome:set_bpm(self.metronome.bpm + 10)
 				self.successful_hits = 0
 			end
+			self.enemies:remove(enemy_under_mouse)
 		else
 			assets.sounds.failed_hit:play()
 			self.metronome:set_bpm(100)
