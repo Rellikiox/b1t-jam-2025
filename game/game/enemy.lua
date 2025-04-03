@@ -41,8 +41,6 @@ function Enemy:draw()
 		self.position.x - 16,
 		self.position.y - 8
 	)
-	local move_preview_start = self.position + self.direction * 8
-	love.graphics.line(move_preview_start.x, move_preview_start.y, self.next_position.x, self.next_position.y)
 end
 
 local EnemyManager = Object:extend()
@@ -68,8 +66,15 @@ function EnemyManager:new()
 			enemy:on_half_beat()
 		end
 	end)
-	Events:listen(self, 'tempo_up', function() self.spawn_interval = self.spawn_interval - 0.07 end)
-	Events:listen(self, 'tempo_down', function() self.spawn_interval = self.spawn_interval + 0.07 end)
+	Events:listen(self, 'tempo_up', function(tempo_level)
+		self.spawn_interval = self.spawn_interval - 0.07
+		for i = 1, 10 do
+			self:spawn_enemy()
+		end
+	end)
+	Events:listen(self, 'tempo_down', function(tempo_level)
+		self.spawn_interval = self.spawn_interval + 0.07
+	end)
 
 	self.bat_frames = {
 		love.graphics.newQuad(0, 0, 32, 16, 32, 32),
@@ -82,7 +87,8 @@ end
 
 function EnemyManager:spawn_enemy()
 	local radius = (game_size / 2):length()
-	local position = vec2.from_angle(math.random() * math.pi * 2) * radius + game_size / 2
+	local position = vec2.from_angle(math.random() * math.pi * 2) * radius +
+		game_size / 2
 	local enemy = Enemy {
 		position = position,
 		frames = self.bat_frames,

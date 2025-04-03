@@ -8,18 +8,25 @@ assets = require('lib.cargo').init({
 	}
 })
 local Coroutines = require 'engine.coroutines'
-local scenes = require('lib.roomy').new()
-local combat_scene = require 'scenes.combat'
+scenes = require('lib.roomy').new()
+local moonshine = require 'lib.moonshine'
+local main_menu_scene = require 'scenes.main_menu'
+
 
 function love.load()
-	local font = love.graphics.newFont('assets/fonts/m3x6.ttf', 48, 'mono')
-	love.graphics.setFont(font)
+	LargeFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 39, 'mono')
+	MediumFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 26, 'mono')
+	SmallFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 13, 'mono')
+
 	love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
 
 	game_size = vec2 { 1280, 720 }
 
+	effect = moonshine(moonshine.effects.crt)
+	effect.crt.scaleFactor = 0.97
+
 	scenes:hook({ exclude = { 'draw' } })
-	scenes:enter(combat_scene)
+	scenes:enter(main_menu_scene)
 end
 
 function love.update(delta)
@@ -27,8 +34,10 @@ function love.update(delta)
 end
 
 function love.draw()
-	love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
-	Pallete.Foreground:set()
+	effect(function()
+		love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
+		Pallete.Foreground:set()
 
-	scenes:emit('draw')
+		scenes:emit('draw')
+	end)
 end

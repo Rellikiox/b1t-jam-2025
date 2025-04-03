@@ -1,87 +1,15 @@
 local Events = require 'engine.events'
 local Enemy = require 'game.enemy'
 local Particles = require 'game.particles'
-
-local TempoColors = {
-	Colors.Grass, Colors.Orange, Colors.Yellow, Colors.Pink, Colors.Red,
-	Colors.Violet, Colors.Blue, Colors.Teal, Colors.Purple, Colors.Tan, Colors.White
-}
-
-local Metronome = Object:extend()
-
-function Metronome:new(start_bmp, bpm_increase)
-	self.bpm_increase = bpm_increase
-	self.tempo_level = 1
-
-	self.beat_timer = Timer {
-		timeout = self.interval,
-		callback = function()
-			Events:send('beat')
-		end
-	}
-	self.half_beat_timer = Timer {
-		timeout = self.half_interval,
-		callback = function()
-			Events:send('half_beat')
-		end
-	}
-
-	self:set_bpm(start_bmp)
-end
-
-function Metronome:increase_bpm()
-	if self.tempo_level == 11 then
-		return
-	end
-	self.tempo_level = self.tempo_level + 1
-	self:set_bpm(self.bpm + self.bpm_increase)
-	Events:send('tempo_up', self.tempo_level)
-end
-
-function Metronome:decrease_bpm()
-	if self.tempo_level == 1 then
-		return
-	end
-	self.tempo_level = self.tempo_level - 1
-	self:set_bpm(self.bpm - self.bpm_increase)
-	Events:send('tempo_down', self.tempo_level)
-end
-
-function Metronome:set_bpm(bpm)
-	self.bpm = bpm
-	self.interval = 60 / bpm
-	self.half_interval = self.interval / 2
-	self.beat_margin = self.interval / 6
-
-	self.beat_timer.timeout = self.interval
-	self.half_beat_timer.timeout = self.half_interval
-	Pallete.Foreground = TempoColors[self.tempo_level]
-end
-
-function Metronome:update(delta)
-	self.beat_timer:increment(delta)
-	self.half_beat_timer:increment(delta)
-end
-
-function Metronome:is_on_beat()
-	local to_beat = math.min(
-		self.beat_timer.elapsed,
-		math.abs(self.beat_timer.timeout - self.beat_timer.elapsed)
-	)
-	return to_beat < self.beat_margin
-end
+local Metronome = require 'game.metronome'
 
 local combat = {}
 
 function combat:enter(previous, ...)
-	local beat_sfx = assets.sounds.beat:clone()
-	local half_beat_sfx = assets.sounds.beat:clone()
-	half_beat_sfx:setPitch(0.5)
-	half_beat_sfx:setVolume(0.5)
 	self.metronome = Metronome(100, 10)
 
 	Events:listen(self, 'beat', function()
-		beat_sfx:play()
+		assets.sounds.beat:play()
 	end)
 
 	self.successful_hits = 0
@@ -100,12 +28,17 @@ function combat:enter(previous, ...)
 	self.enemies:spawn_enemy()
 
 	self.particles = Particles()
+	self.tempo_bar_filling = 0
+	self.tempo_bar_filled = 0
 end
 
 function combat:update(delta)
 	self.metronome:update(delta)
 	self.enemies:update(delta)
 	self.particles:update(delta)
+
+	self.tempo_bar_filling = self.successful_hits / 10
+	self.tempo_bar_filled = lerp(self.tempo_bar_filled, self.tempo_bar_filling, 0.08)
 end
 
 function combat:leave(next, ...)
@@ -113,19 +46,34 @@ function combat:leave(next, ...)
 end
 
 function combat:draw()
-	local text_width = love.graphics.getFont():getWidth(self.metronome.bpm)
-	love.graphics.print(self.metronome.bpm, 20, 10)
-	love.graphics.setLineWidth(1)
-
-	love.graphics.draw(
-		assets.images.pips_spritesheet, self.hits_spritesheet[self.successful_hits + 1],
-		20 + text_width + 8, 22
-	)
-
-	love.graphics.print(self.metronome.bpm + 10, 145, 10)
-
 	self.enemies:draw()
 	self.particles:draw()
+
+	-- top bar
+	local start_x = love.graphics.getWidth() / 2 - 312
+	local start_y = 30
+	love.graphics.draw(assets.images.xp_frame, start_x, start_y, 0, 2, 2)
+
+	local function get_stencil_for(percentage)
+		return function()
+			love.graphics.rectangle(
+				'fill',
+				start_x,
+				start_y,
+				624 * percentage,
+				60
+			)
+		end
+	end
+	love.graphics.stencil(get_stencil_for(self.tempo_bar_filling), 'replace', 1)
+	love.graphics.setStencilTest('greater', 0)
+	love.graphics.draw(assets.images.xp_frame_filling, start_x, start_y, 0, 2, 2)
+
+	love.graphics.stencil(get_stencil_for(self.tempo_bar_filled), 'replace', 1)
+	love.graphics.setStencilTest('greater', 0)
+	love.graphics.draw(assets.images.xp_frame_filled, start_x, start_y, 0, 2, 2)
+
+	love.graphics.setStencilTest()
 end
 
 function combat:mousepressed(x, y, button)
@@ -160,6 +108,7 @@ function combat:mousereleased(x, y, button)
 end
 
 function combat:mousemoved(x, y, dx, dy)
+
 end
 
 return combat

@@ -5,10 +5,14 @@ function Particles:new()
 	self.particle_lifetime = 0.5
 	self.particle_speed = 200
 	self.quads = {
-		love.graphics.newQuad(0, 0, 16, 16, 32, 32),
-		love.graphics.newQuad(16, 0, 16, 16, 32, 32),
-		love.graphics.newQuad(0, 16, 16, 16, 32, 32),
-		love.graphics.newQuad(16, 16, 16, 16, 32, 32),
+		love.graphics.newQuad(0, 0, 16, 16, 32, 64),
+		love.graphics.newQuad(16, 0, 16, 16, 32, 64),
+		love.graphics.newQuad(0, 16, 16, 16, 32, 64),
+		love.graphics.newQuad(16, 16, 16, 16, 32, 64),
+		love.graphics.newQuad(0, 32, 16, 16, 32, 64),
+		love.graphics.newQuad(16, 32, 16, 16, 32, 64),
+		love.graphics.newQuad(0, 48, 16, 16, 32, 64),
+		love.graphics.newQuad(16, 48, 16, 16, 32, 64),
 	}
 end
 
