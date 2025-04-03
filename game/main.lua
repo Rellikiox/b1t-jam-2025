@@ -10,20 +10,13 @@ assets = require('lib.cargo').init({
 local Coroutines = require 'engine.coroutines'
 local scenes = require('lib.roomy').new()
 local combat_scene = require 'scenes.combat'
-local Terebi = require "lib.terebi"
 
 function love.load()
-	local font = love.graphics.newFont('assets/fonts/m3x6.ttf', 16, 'mono')
+	local font = love.graphics.newFont('assets/fonts/m3x6.ttf', 48, 'mono')
 	love.graphics.setFont(font)
+	love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
 
-
-	game_size = vec2 { 320, 240 }
-	Terebi.initializeLoveDefaults()
-	screen = Terebi.newScreen(game_size.x, game_size.y, 4)
-
-	--
-
-	love.graphics.setBackgroundColor(unpack(Pallete.Dark:to_array()))
+	game_size = vec2 { 1280, 720 }
 
 	scenes:hook({ exclude = { 'draw' } })
 	scenes:enter(combat_scene)
@@ -34,7 +27,8 @@ function love.update(delta)
 end
 
 function love.draw()
-	screen:draw(function()
-		scenes:emit('draw')
-	end)
+	love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
+	Pallete.Foreground:set()
+
+	scenes:emit('draw')
 end
