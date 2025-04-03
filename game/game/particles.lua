@@ -17,7 +17,7 @@ function Particles:spawn(position, intensity)
 		local particle = {
 			position = position,
 			lifetime = self.particle_lifetime * intensity,
-			speed = self.particle_speed * intensity,
+			speed = self.particle_speed * math.random(intensity),
 			scale = math.random() * 0.2 + 0.9,
 			direction = vec2.from_angle(math.random() * math.pi * 2):normalized(),
 			quad = self.quads[math.random(#self.quads)],

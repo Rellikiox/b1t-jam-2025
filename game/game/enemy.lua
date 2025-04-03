@@ -114,7 +114,7 @@ end
 function EnemyManager:get_enemy_at(x, y)
 	local point = vec2 { x, y }
 	for _, enemy in ipairs(self.enemies) do
-		if enemy.position:distance(point) < 24 then
+		if enemy.position:distance(point) < 30 then
 			return enemy
 		end
 	end
