@@ -11,6 +11,7 @@ function Enemy:new(args)
 	self.frames = args.frames
 	self.frame = 1
 	self.move_step = 1
+	self.beat_needs_update = true
 end
 
 function Enemy:get_next_position()
@@ -22,16 +23,20 @@ function Enemy:on_half_beat()
 end
 
 function Enemy:on_beat()
-	self.move_step = self.move_step + 1
-	if self.move_step > 3 then
-		self.move_step = 1
-		self.target_position = self.next_position
-		self.next_position = self:get_next_position()
-	end
+	self.beat_needs_update = true
 end
 
 function Enemy:update(delta)
 	self.position = exp_smoothing(self.position, self.target_position, 3, delta)
+	if self.beat_needs_update then
+		self.move_step = self.move_step + 1
+		if self.move_step > 3 then
+			self.move_step = 1
+			self.target_position = self.next_position
+			self.next_position = self:get_next_position()
+		end
+		self.beat_needs_update = false
+	end
 end
 
 function Enemy:draw()
@@ -117,14 +122,14 @@ function EnemyManager:remove(enemy)
 	end
 end
 
-function EnemyManager:get_enemy_at(x, y)
-	local point = vec2 { x, y }
+function EnemyManager:get_enemies_in_radius(point, radius)
+	local enemies = {}
 	for _, enemy in ipairs(self.enemies) do
-		if enemy.position:distance(point) < 30 then
-			return enemy
+		if enemy.position:distance(point) < radius then
+			table.insert(enemies, enemy)
 		end
 	end
-	return nil
+	return enemies
 end
 
 return {

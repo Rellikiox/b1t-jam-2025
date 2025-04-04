@@ -522,13 +522,11 @@ function Button:new(args)
 			end
 		end
 	end
+end
 
-	if self.width == 0 then
-		self.width = math.floor(self.style.font:getWidth(self.text) + 10)
-	end
-	if self.height == 0 then
-		self.height = math.floor(self.style.font:getHeight() + 10)
-	end
+function Button:calculate_size()
+	self.width = math.floor(self.style.font:getWidth(self.text) + 10)
+	self.height = math.floor(self.style.font:getHeight() + 10)
 	self.drawn_height = self.height - 5
 end
 
