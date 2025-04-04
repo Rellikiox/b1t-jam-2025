@@ -29,10 +29,10 @@ return {
 	},
 	riff = {
 		name = 'Riff',
-		description = '50% chance to send out a bat-destroying riff.',
+		description = '15% chance to send out a bat-destroying riff.',
 		icon = "riff",
 		on_successful_hit = function(self, position, combat)
-			if math.random() < 0.5 then
+			if math.random() <= 0.15 then
 				combat:spawn_riff(position)
 			end
 		end

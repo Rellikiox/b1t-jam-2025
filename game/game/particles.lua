@@ -17,7 +17,7 @@ function Particles:new()
 end
 
 function Particles:spawn(position, intensity)
-	for i = 1, 3 * intensity do
+	for i = 1, 3 * math.sqrt(intensity) do
 		local particle = {
 			position = position,
 			lifetime = self.particle_lifetime * intensity,

@@ -75,6 +75,7 @@ end
 function combat:kill_enemy(enemy)
 	self.enemies:remove(enemy)
 	self.particles:spawn(enemy.position, self.metronome.tempo_level)
+	self.successful_hits = self.successful_hits + 1
 end
 
 function combat:update(delta)
@@ -85,7 +86,10 @@ function combat:update(delta)
 		for i = #self.effects, 1, -1 do
 			local effect = self.effects[i]
 			effect:update(delta)
-			if not is_point_in_rect(effect.position, vec2 { -100, -100 }, game_size + vec2 { 200, 200 }) then
+			if (
+					effect.dead or
+					not is_point_in_rect(effect.position, vec2 { -100, -100 }, game_size + vec2 { 200, 200 })
+				) then
 				table.remove(self.effects, i)
 			end
 		end
@@ -181,7 +185,6 @@ function combat:mousepressed(x, y, button)
 				end
 			end
 
-			self.successful_hits = self.successful_hits + 1
 			if self.successful_hits == 10 then
 				self:set_state('upgrade')
 			end

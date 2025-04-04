@@ -16,6 +16,7 @@ function Riff:new(position, direction)
 	self.direction = direction
 	self.speed = 100
 	self.angle = self.direction:angle() + math.pi / 4
+	self.dead = false
 end
 
 function Riff:update(delta)
@@ -24,8 +25,9 @@ end
 
 function Riff:on_beat(combat)
 	local enemies = combat.enemies:get_enemies_in_radius(self.position + self.direction * 8, 30)
-	for _, enemy in ipairs(enemies) do
-		combat:kill_enemy(enemy)
+	if #enemies >= 1 then
+		combat:kill_enemy(enemies[1])
+		self.dead = true
 	end
 end
 
