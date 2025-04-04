@@ -14,6 +14,8 @@ local main_menu_scene = require 'scenes.main_menu'
 
 
 function love.load()
+	love.mouse.setVisible(false)
+
 	LargeFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 39, 'mono')
 	MediumFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 26, 'mono')
 	SmallFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 13, 'mono')
@@ -39,5 +41,8 @@ function love.draw()
 		Pallete.Foreground:set()
 
 		scenes:emit('draw')
+
+		local x, y = love.mouse.getPosition()
+		love.graphics.draw(assets.images.cursor, x + 2, y)
 	end)
 end

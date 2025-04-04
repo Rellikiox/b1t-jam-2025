@@ -92,9 +92,6 @@ function combat:mousepressed(x, y, button)
 			self.particles:spawn(enemy_under_mouse.position, self.metronome.tempo_level)
 		else
 			assets.sounds.failed_hit:play()
-			if self.successful_hits == 0 then
-				self.metronome:decrease_bpm()
-			end
 			self.successful_hits = 0
 		end
 	elseif button == 2 then

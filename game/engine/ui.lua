@@ -79,7 +79,7 @@ function Node:new(args)
 	local style = args.style or {}
 	self.style = {
 		font = style.font or love.graphics.getFont(),
-		text_color = style.text_color or Colors.Peach,
+		text_color = style.text_color,
 		bg_color = style.bg_color,
 		hover_color = style.hover_color,
 		pressed_color = style.pressed_color
@@ -546,24 +546,22 @@ function Button:draw()
 
 	local text_width = self.style.font:getWidth(self.text)
 	local text_height = self.style.font:getHeight()
-
-	love.graphics.rectangle('line', x, y, self.width, self.height)
-
-	love.graphics.setFont(self.style.font)
 	local label_x = math.floor(x + self.width / 2)
 	local label_y = math.floor(y + self.height / 2)
-	love.graphics.print(
-		self.text,
-		label_x,
-		label_y,
-		0,
-		1,
-		1,
-		math.floor(text_width / 2),
-		math.floor(text_height / 2)
-	)
+	love.graphics.setFont(self.style.font)
 
-	return
+	if self.is_hovered then
+		love.graphics.rectangle('fill', x, y, self.width, self.height)
+		Pallete.Background:set()
+	else
+		love.graphics.rectangle('line', x, y, self.width, self.height)
+	end
+	love.graphics.print(
+		self.text, label_x, label_y - 2,
+		0, 1, 1,
+		math.floor(text_width / 2), math.floor(text_height / 2)
+	)
+	Pallete.Foreground:set()
 end
 
 local Image = Node:extend()
