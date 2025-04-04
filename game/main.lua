@@ -41,8 +41,5 @@ function love.draw()
 		Pallete.Foreground:set()
 
 		scenes:emit('draw')
-
-		local x, y = love.mouse.getPosition()
-		love.graphics.draw(assets.images.cursor, x + 2, y)
 	end)
 end

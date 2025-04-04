@@ -36,6 +36,18 @@ function combat:enter(previous, ...)
 
 	self.upgrades = {}
 	self.upgrade_ui = nil
+
+	self.dots_canvas = love.graphics.newCanvas(game_size.x, game_size.y)
+	self.dots_canvas:renderTo(function()
+		for x = 1, game_size.x, 10 do
+			for y = 1, game_size.y, 10 do
+				local px = x + math.random() * 4
+				local py = y + math.random() * 4
+				love.graphics.circle('fill', px, py, 2)
+			end
+		end
+	end)
+	self.attack_radius = 30
 end
 
 function combat:update(delta)
@@ -55,6 +67,15 @@ function combat:leave(next, ...)
 end
 
 function combat:draw()
+	love.graphics.stencil(function()
+		love.graphics.setLineWidth(self.attack_radius / 2)
+		love.graphics.circle('line', love.mouse.getX(), love.mouse.getY(), self.attack_radius / 2)
+		love.graphics.setLineWidth(1)
+	end)
+	love.graphics.setStencilTest('greater', 0)
+	love.graphics.draw(self.dots_canvas, 0, 0)
+	love.graphics.setStencilTest()
+
 	self.enemies:draw()
 	self.particles:draw()
 
@@ -84,15 +105,21 @@ function combat:draw()
 
 	love.graphics.setStencilTest()
 
+	local x, y = love.mouse.getPosition()
 	if self.state == 'upgrade' then
 		self.upgrade_ui:draw()
+		love.graphics.draw(assets.images.cursor, x + 2, y)
 	end
 end
 
 function combat:mousepressed(x, y, button)
+	if self.state == 'upgrade' then
+		return
+	end
+
 	if button == 1 then
 		local point = vec2 { x, y }
-		local enemy_under_mouse = self.enemies:get_enemies_in_radius(point, 30)
+		local enemy_under_mouse = self.enemies:get_enemies_in_radius(point, self.attack_radius)
 		local on_beat = self.metronome:is_on_beat()
 		if on_beat and #enemy_under_mouse > 0 then
 			assets.sounds.successful_hit:play()
@@ -156,9 +183,11 @@ function combat:set_state(state)
 					else
 						self.upgrades[upgrade_name] = table.shallow_copy(assets.data.upgrades[upgrade_name])
 					end
+					if self.upgrades[upgrade_name].on_selected then
+						self.upgrades[upgrade_name]:on_selected(self)
+					end
 
 					self:set_state('combat')
-
 					self.metronome:increase_bpm()
 					self.successful_hits = 0
 				end,

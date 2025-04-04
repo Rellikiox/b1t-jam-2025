@@ -35,5 +35,13 @@ return {
 		on_successful_hit = function(self, position, combat)
 
 		end
+	},
+	wide_click = {
+		name = 'Wide Click',
+		description = 'Increase the attack radius by 5 pixels.',
+		level = 1,
+		on_selected = function(self, combat)
+			combat.attack_radius = combat.attack_radius + 5
+		end,
 	}
 }

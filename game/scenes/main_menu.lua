@@ -68,6 +68,9 @@ end
 
 function main_menu:draw()
 	self.ui:draw()
+
+	local x, y = love.mouse.getPosition()
+	love.graphics.draw(assets.images.cursor, x + 2, y)
 end
 
 function main_menu:mousemoved(x, y, dx, dy)

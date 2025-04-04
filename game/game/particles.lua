@@ -2,7 +2,7 @@ local Particles = Object:extend()
 
 function Particles:new()
 	self.particles = {}
-	self.particle_lifetime = 0.5
+	self.particle_lifetime = 1
 	self.particle_speed = 200
 	self.quads = {
 		love.graphics.newQuad(0, 0, 16, 16, 32, 64),
@@ -35,10 +35,10 @@ function Particles:update(delta)
 	for i = #self.particles, 1, -1 do
 		local particle = self.particles[i]
 		particle.lifetime = particle.lifetime - delta
-		if particle.scale < 0.1 then
+		if particle.scale < 0.5 then
 			table.remove(self.particles, i)
 		elseif particle.lifetime <= 0 then
-			particle.scale = particle.scale * 0.999
+			particle.scale = particle.scale * 0.95
 		else
 			particle.speed = particle.speed * 0.9
 			particle.position = particle.position + particle.direction * particle.speed * delta
