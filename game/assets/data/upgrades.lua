@@ -1,47 +1,40 @@
 return {
-	forgiving_beat = {
-		name = "Forgiving Beat",
-		description = "Negates the next ({level}) failed hit(s). Refreshes every 5 successful hits. ",
-		icon = "assets/data/upgrades/forgiving_beat.png",
-		level = 1
-	},
-	chain_reaction = {
-		name = "Chain Reaction",
-		description = "Every 5 successful hits, atttack {level} closest target(s).",
-		icon = "assets/data/upgrades/chain_reaction.png",
-		counter = 0,
-		level = 1,
+	chain_lightning = {
+		name = "Chain Lightning",
+		description = "10% chance to chain damage to a nearby enemy. Repeats.",
+		icon = "chain_lightning",
 		on_successful_hit = function(self, position, combat)
-			self.counter = self.counter + 1
-			if self.counter == 5 then
-				self.counter = 0
+			local should_chain = math.random() < 0.1
+			while should_chain do
 				local enemies = combat.enemies:get_enemies_in_radius(position, 100)
-				for i = 1, math.min(self.level, #enemies) do
-					local enemy = enemies[i]
-					if enemy then
-						combat.enemies:remove(enemy)
-						combat.particles:spawn(enemy.position, combat.metronome.tempo_level)
-					end
+
+				local enemy = enemies[1]
+				if enemy then
+					combat:kill_enemy(enemy)
+					position = enemy.position
+					should_chain = math.random() < 0.1
+				else
+					should_chain = false
 				end
 			end
-		end
-	},
-	beat_shield = {
-		name = "Beat Shield",
-		description = "Every 10 successful hits, gain a shield that negates the next enemy collision.",
-		icon = "assets/data/upgrades/beat_shield.png",
-		counter = 0,
-		level = 1,
-		on_successful_hit = function(self, position, combat)
-
 		end
 	},
 	wide_click = {
 		name = 'Wide Click',
 		description = 'Increase the attack radius by 5 pixels.',
-		level = 1,
+		icon = "wide_click",
 		on_selected = function(self, combat)
 			combat.attack_radius = combat.attack_radius + 5
 		end,
+	},
+	riff = {
+		name = 'Riff',
+		description = '50% chance to send out a bat-destroying riff.',
+		icon = "riff",
+		on_successful_hit = function(self, position, combat)
+			if math.random() < 0.5 then
+				combat:spawn_riff(position)
+			end
+		end
 	}
 }

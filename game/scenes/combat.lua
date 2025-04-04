@@ -3,6 +3,19 @@ local Enemy = require 'game.enemy'
 local Particles = require 'game.particles'
 local Metronome = require 'game.metronome'
 local ui = require 'engine.ui'
+local Effects = require 'game.effects'
+
+local stencil_shader = love.graphics.newShader([[
+extern vec4 color;
+
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+    vec4 pixel = Texel(texture, texture_coords);
+    if (pixel.a == 0.0) {
+        discard; // Skip fully transparent pixels
+    }
+    return pixel * color;
+}
+]])
 
 local combat = {}
 
@@ -13,6 +26,12 @@ function combat:enter(previous, ...)
 
 	Events:listen(self, 'beat', function()
 		assets.sounds.beat:play()
+
+		if self.state == 'combat' then
+			for _, effect in ipairs(self.effects) do
+				effect:on_beat(self)
+			end
+		end
 	end)
 
 	self.successful_hits = 0
@@ -48,6 +67,14 @@ function combat:enter(previous, ...)
 		end
 	end)
 	self.attack_radius = 30
+
+	self.effects = {}
+	self:spawn_riff(vec2 { game_size.x / 2, game_size.y / 2 })
+end
+
+function combat:kill_enemy(enemy)
+	self.enemies:remove(enemy)
+	self.particles:spawn(enemy.position, self.metronome.tempo_level)
 end
 
 function combat:update(delta)
@@ -55,6 +82,13 @@ function combat:update(delta)
 	if self.state == 'combat' then
 		self.enemies:update(delta)
 		self.particles:update(delta)
+		for i = #self.effects, 1, -1 do
+			local effect = self.effects[i]
+			effect:update(delta)
+			if not is_point_in_rect(effect.position, vec2 { -100, -100 }, game_size + vec2 { 200, 200 }) then
+				table.remove(self.effects, i)
+			end
+		end
 	elseif self.state == 'upgrade' then
 		self.upgrade_ui:update(delta)
 	end
@@ -67,13 +101,23 @@ function combat:leave(next, ...)
 end
 
 function combat:draw()
+	love.graphics.draw(assets.images.heart, game_size.x / 2 - 32, game_size.y / 2 - 32)
+
+	love.graphics.setShader(stencil_shader)
 	love.graphics.stencil(function()
 		love.graphics.setLineWidth(self.attack_radius / 2)
 		love.graphics.circle('line', love.mouse.getX(), love.mouse.getY(), self.attack_radius / 2)
 		love.graphics.setLineWidth(1)
+
+		for _, effect in ipairs(self.effects) do
+			effect:draw()
+		end
 	end)
+	love.graphics.setShader()
+
 	love.graphics.setStencilTest('greater', 0)
 	love.graphics.draw(self.dots_canvas, 0, 0)
+
 	love.graphics.setStencilTest()
 
 	self.enemies:draw()
@@ -110,6 +154,13 @@ function combat:draw()
 		self.upgrade_ui:draw()
 		love.graphics.draw(assets.images.cursor, x + 2, y)
 	end
+
+	start_x = love.graphics.getWidth() / 2 - 312
+	start_y = 70
+	for index, upgrade in ipairs(self.upgrades) do
+		local icon = assets.images.upgrades[upgrade.icon]
+		love.graphics.draw(icon, start_x + index * 40, start_y, 0, 1, 1, -10, -10)
+	end
 end
 
 function combat:mousepressed(x, y, button)
@@ -123,9 +174,8 @@ function combat:mousepressed(x, y, button)
 		local on_beat = self.metronome:is_on_beat()
 		if on_beat and #enemy_under_mouse > 0 then
 			assets.sounds.successful_hit:play()
-			self.enemies:remove(enemy_under_mouse[1])
-			self.particles:spawn(enemy_under_mouse[1].position, self.metronome.tempo_level)
-			for upgrade, _ in pairs(self.upgrades) do
+			self:kill_enemy(enemy_under_mouse[1])
+			for _, upgrade in ipairs(self.upgrades) do
 				if upgrade.on_successful_hit then
 					upgrade:on_successful_hit(enemy_under_mouse[1].position, self)
 				end
@@ -144,7 +194,7 @@ function combat:mousepressed(x, y, button)
 			self:set_state('upgrade')
 		end
 	elseif button == 3 then
-		-- middle click
+		self:spawn_riff(vec2 { love.mouse.getPosition() })
 	end
 end
 
@@ -178,13 +228,11 @@ function combat:set_state(state)
 					font = MediumFont,
 				},
 				on_pressed = function()
-					if self.upgrades[upgrade_name] then
-						self.upgrades[upgrade_name].level = self.upgrades[upgrade_name].level + 1
-					else
-						self.upgrades[upgrade_name] = table.shallow_copy(assets.data.upgrades[upgrade_name])
-					end
-					if self.upgrades[upgrade_name].on_selected then
-						self.upgrades[upgrade_name]:on_selected(self)
+					local upgrade = table.shallow_copy(assets.data.upgrades[upgrade_name])
+					table.insert(self.upgrades, upgrade)
+
+					if upgrade.on_selected then
+						upgrade:on_selected(self)
 					end
 
 					self:set_state('combat')
@@ -232,6 +280,10 @@ function combat:set_state(state)
 			}
 		}
 	end
+end
+
+function combat:spawn_riff(position)
+	table.insert(self.effects, Effects.Riff(position, vec2.from_angle(math.random() * math.pi * 2)))
 end
 
 return combat
