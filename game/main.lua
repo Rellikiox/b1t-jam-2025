@@ -1,3 +1,11 @@
+--[[
+	TODO
+	- Pause menu
+	- Fail state = heart takes damage > goes down one tempo level. If at 0, game over.
+	- Game over = show score, show main menu button
+	- More upgrades
+]]
+
 require 'globals'
 assets = require('lib.cargo').init({
 	dir = 'assets',

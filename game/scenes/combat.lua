@@ -19,15 +19,21 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 
 local combat = {}
 
-function combat:enter(previous, ...)
+function combat:enter(previous, difficulty_level)
 	self.state = 'combat'
 
-	self.metronome = Metronome(100, 10)
+	local difficulty = assets.data.difficulty[difficulty_level]
+	self.metronome = Metronome(
+		difficulty.bpm,
+		difficulty.bpm_increase,
+		difficulty.songs[math.random(#difficulty.songs)]
+	)
+	self.metronome:play()
 
-	Events:listen(self, 'beat', function()
+	Events:listen(self, 'half_beat', function()
 		self.heart_index = (self.heart_index + 1) % 2
-		assets.sounds.beat:play()
-
+	end)
+	Events:listen(self, 'beat', function()
 		if self.state == 'combat' then
 			for _, effect in ipairs(self.effects) do
 				effect:on_beat(self)
@@ -71,13 +77,17 @@ function combat:enter(previous, ...)
 
 	self.effects = {}
 
-	self.heart_index = 0
+	self.heart_index = 1
 end
 
 function combat:kill_enemy(enemy)
 	self.enemies:remove(enemy)
 	self.particles:spawn(enemy.position, self.metronome.tempo_level)
 	self.successful_hits = self.successful_hits + 1
+
+	if self.successful_hits == 10 then
+		self:set_state('upgrade')
+	end
 end
 
 function combat:update(delta)
@@ -107,7 +117,6 @@ function combat:leave(next, ...)
 end
 
 function combat:draw()
-	print('heart' .. self.heart_index + 1)
 	love.graphics.draw(assets.images['heart' .. self.heart_index + 1], game_size.x / 2 - 32, game_size.y / 2 - 32)
 
 	love.graphics.setShader(stencil_shader)
@@ -181,24 +190,24 @@ function combat:mousepressed(x, y, button)
 		local on_beat = self.metronome:is_on_beat()
 		if on_beat and #enemy_under_mouse > 0 then
 			assets.sounds.successful_hit:play()
-			self:kill_enemy(enemy_under_mouse[1])
 			for _, upgrade in ipairs(self.upgrades) do
 				if upgrade.on_successful_hit then
 					upgrade:on_successful_hit(enemy_under_mouse[1].position, self)
 				end
 			end
 
-			if self.successful_hits == 10 then
-				self:set_state('upgrade')
-			end
+			self:kill_enemy(enemy_under_mouse[1])
 		else
 			assets.sounds.failed_hit:play()
 			self.successful_hits = 0
 		end
 	elseif button == 2 then
-		if self.state == 'combat' then
-			self:set_state('upgrade')
+		if self.enabled then
+			self.enabled = false
+		else
+			self.enabled = true
 		end
+		self.metronome:set_low_pass_filter_enabled(self.enabled)
 	elseif button == 3 then
 		self:spawn_riff(vec2 { love.mouse.getPosition() })
 	end
@@ -213,10 +222,12 @@ end
 
 function combat:set_state(state)
 	if state == 'combat' then
+		self.metronome:set_low_pass_filter_enabled(false)
 		self.state = 'combat'
 		self.upgrade_ui.visible = false
 	elseif state == 'upgrade' then
 		self.state = 'upgrade'
+		self.metronome:set_low_pass_filter_enabled(true)
 		local available_upgrades = {}
 		for upgrade_name, _ in pairs(assets.data.upgrades) do
 			table.insert(available_upgrades, upgrade_name)

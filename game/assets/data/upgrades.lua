@@ -1,10 +1,10 @@
 return {
 	chain_lightning = {
 		name = "Chain Lightning",
-		description = "10% chance to chain damage to a nearby enemy. Repeats.",
+		description = "20% chance to chain damage to a nearby enemy. Repeats.",
 		icon = "chain_lightning",
 		on_successful_hit = function(self, position, combat)
-			local should_chain = math.random() < 0.1
+			local should_chain = math.random() < 0.2
 			while should_chain do
 				local enemies = combat.enemies:get_enemies_in_radius(position, 100)
 
@@ -12,7 +12,7 @@ return {
 				if enemy then
 					combat:kill_enemy(enemy)
 					position = enemy.position
-					should_chain = math.random() < 0.1
+					should_chain = math.random() < 0.2
 				else
 					should_chain = false
 				end
@@ -29,10 +29,10 @@ return {
 	},
 	riff = {
 		name = 'Riff',
-		description = '15% chance to send out a bat-destroying riff.',
+		description = '50% chance to send out a bat-destroying riff.',
 		icon = "riff",
 		on_successful_hit = function(self, position, combat)
-			if math.random() <= 0.15 then
+			if math.random() <= 0.50 then
 				combat:spawn_riff(position)
 			end
 		end
