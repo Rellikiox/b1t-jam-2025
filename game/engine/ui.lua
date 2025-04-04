@@ -552,6 +552,9 @@ function Button:draw()
 		love.graphics.rectangle('fill', x, y, self.width, self.height)
 		Pallete.Background:set()
 	else
+		Pallete.Background:set()
+		love.graphics.rectangle('fill', x, y, self.width, self.height)
+		Pallete.Foreground:set()
 		love.graphics.rectangle('line', x, y, self.width, self.height)
 	end
 	love.graphics.print(

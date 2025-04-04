@@ -25,6 +25,7 @@ function combat:enter(previous, ...)
 	self.metronome = Metronome(100, 10)
 
 	Events:listen(self, 'beat', function()
+		self.heart_index = (self.heart_index + 1) % 2
 		assets.sounds.beat:play()
 
 		if self.state == 'combat' then
@@ -69,7 +70,8 @@ function combat:enter(previous, ...)
 	self.attack_radius = 30
 
 	self.effects = {}
-	self:spawn_riff(vec2 { game_size.x / 2, game_size.y / 2 })
+
+	self.heart_index = 0
 end
 
 function combat:kill_enemy(enemy)
@@ -105,7 +107,8 @@ function combat:leave(next, ...)
 end
 
 function combat:draw()
-	love.graphics.draw(assets.images.heart, game_size.x / 2 - 32, game_size.y / 2 - 32)
+	print('heart' .. self.heart_index + 1)
+	love.graphics.draw(assets.images['heart' .. self.heart_index + 1], game_size.x / 2 - 32, game_size.y / 2 - 32)
 
 	love.graphics.setShader(stencil_shader)
 	love.graphics.stencil(function()
