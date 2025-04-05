@@ -1,7 +1,6 @@
 --[[
 	TODO
-	- Fail state = heart takes damage > goes down one tempo level. If at 0, game over.
-	- Game over = show score, show main menu button
+	- Pause menu - music player
 	- More upgrades
 ]]
 

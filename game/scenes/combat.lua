@@ -23,10 +23,11 @@ function combat:enter(previous, difficulty_level)
 	self.state = 'combat'
 
 	local difficulty = assets.data.difficulty[difficulty_level]
+	self.song_index = math.random(0, 2)
 	self.metronome = Metronome(
 		difficulty.bpm,
 		difficulty.bpm_increase,
-		difficulty.songs[math.random(#difficulty.songs)]
+		difficulty.songs[self.song_index + 1]
 	)
 	self.metronome:play()
 
@@ -198,6 +199,41 @@ function combat:enter(previous, difficulty_level)
 					love.event.push('quit')
 				end,
 				hover_color = Colors.Purple
+			},
+			ui.Row { padding = ui.Padding(20) },
+			ui.Label {
+				text = ' currently playing: ' .. self.metronome.song_data.name .. ' ',
+				style = {
+					font = SmallFont,
+				}
+			},
+			ui.Row {
+				align = ui.Align.Center,
+				separation = 20,
+				Button {
+					text = ' previous song',
+					on_pressed = function()
+						self.song_index = (self.song_index - 1) % 3
+						self.metronome:change_song(
+							assets.data.difficulty[difficulty_level].songs[self.song_index + 1]
+						)
+						self.pause_ui.root.children[6].text = ' currently playing: ' ..
+						self.metronome.song_data.name .. ' '
+					end,
+					hover_color = Colors.White
+				},
+				Button {
+					text = ' next song ',
+					on_pressed = function()
+						self.song_index = (self.song_index + 1) % 3
+						self.metronome:change_song(
+							assets.data.difficulty[difficulty_level].songs[self.song_index + 1]
+						)
+						self.pause_ui.root.children[6].text = ' currently playing: ' ..
+						self.metronome.song_data.name .. ' '
+					end,
+					hover_color = Colors.White
+				}
 			}
 		}
 	}

@@ -29,13 +29,30 @@ function Metronome:new(start_bpm, bpm_increase, song_data)
 	}
 
 	self.song_data = song_data
-	self.song = assets.sounds.songs[self.song_data.name]
+	self.song = assets.sounds.songs[self.song_data.path]
 	self.song:setLooping(true)
 	self.song:setVolume(0.1)
 
 	self:set_bpm(start_bpm)
 	love.audio.setEffect('other_room', { type = 'reverb', airabsorption = 0.998 })
 	love.audio.setEffect('other_room', false)
+
+	self.low_pass = false
+end
+
+function Metronome:change_song(song_data)
+	self.song_data = song_data
+	self.song:stop()
+	self.song = assets.sounds.songs[song_data.path]
+	self.song:setLooping(true)
+	self.song:setVolume(0.1)
+	self.song:setPitch(self.bpm / song_data.bpm)
+	self.song:play()
+	self.beat_timer.elapsed = 0
+	self.half_beat_timer.elapsed = 0
+	if self.low_pass then
+		self:set_low_pass_filter_enabled(true)
+	end
 end
 
 function Metronome:play()
@@ -91,6 +108,7 @@ function Metronome:is_on_beat()
 end
 
 function Metronome:set_low_pass_filter_enabled(enabled)
+	self.low_pass = enabled
 	if enabled then
 		self.song:setFilter({
 			type     = "lowpass",
