@@ -48,77 +48,37 @@ function main_menu:enter(previous, ...)
 			},
 			ui.Row {
 				separation = 10,
-				ui.Button {
-					text = ' easy ',
-					style = {
-						font = MediumFont,
-					},
+				Button({
+					text = '  easy  ',
 					on_pressed = function()
-						scenes:enter(combat_scene, 'easy')
+						scenes:push(combat_scene, 'easy')
 						self.metronome:stop()
-						assets.sounds.successful_hit:play()
 					end,
-					on_hover_enter = function()
-						assets.sounds.successful_hit:play()
-						Pallete.Foreground = Colors.Grass
-					end,
-					on_hover_exit = function()
-						Pallete.Foreground = Colors.Tan
-					end
-				},
-				ui.Button {
+					hover_color = Colors.Grass
+				}),
+				Button {
 					text = ' medium ',
-					style = {
-						font = MediumFont,
-					},
 					on_pressed = function()
-						scenes:enter(combat_scene, 'medium')
+						scenes:push(combat_scene, 'medium')
 						self.metronome:stop()
-						assets.sounds.successful_hit:play()
 					end,
-					on_hover_enter = function()
-						assets.sounds.successful_hit:play()
-						Pallete.Foreground = Colors.Yellow
-					end,
-					on_hover_exit = function()
-						Pallete.Foreground = Colors.Tan
-					end
+					hover_color = Colors.Yellow
 				},
-				ui.Button {
+				Button {
 					text = ' hard ',
-					style = {
-						font = MediumFont,
-					},
 					on_pressed = function()
-						scenes:enter(combat_scene, 'hard')
+						scenes:push(combat_scene, 'hard')
 						self.metronome:stop()
-						assets.sounds.successful_hit:play()
 					end,
-					on_hover_enter = function()
-						assets.sounds.successful_hit:play()
-						Pallete.Foreground = Colors.Orange
-					end,
-					on_hover_exit = function()
-						Pallete.Foreground = Colors.Tan
-					end
+					hover_color = Colors.Orange
 				},
-				ui.Button {
+				Button {
 					text = ' insane ',
-					style = {
-						font = MediumFont,
-					},
 					on_pressed = function()
-						scenes:enter(combat_scene, 'insane')
+						scenes:push(combat_scene, 'insane')
 						self.metronome:stop()
-						assets.sounds.successful_hit:play()
 					end,
-					on_hover_enter = function()
-						assets.sounds.successful_hit:play()
-						Pallete.Foreground = Colors.Red
-					end,
-					on_hover_exit = function()
-						Pallete.Foreground = Colors.Tan
-					end
+					hover_color = Colors.Red
 				},
 			},
 			ui.Row {

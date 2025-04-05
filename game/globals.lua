@@ -1,6 +1,7 @@
 Object = require 'lib.classic'
 require 'engine.vec2'
 require 'engine.utils'
+local ui = require 'engine.ui'
 local Color = require 'engine.color'
 Settings = require 'settings'
 local Tween = require('lib.tween')
@@ -50,3 +51,26 @@ Pallete = {
 	Background = Colors.Black,
 	Foreground = Colors.Grass,
 }
+
+
+function Button(args)
+	local prev_color = Pallete.Foreground
+	return ui.Button {
+		text = args.text,
+		style = {
+			font = MediumFont,
+		},
+		on_pressed = function()
+			assets.sounds.successful_hit:play()
+			args.on_pressed()
+		end,
+		on_hover_enter = function()
+			prev_color = Pallete.Foreground
+			Pallete.Foreground = args.hover_color
+			assets.sounds.successful_hit:play()
+		end,
+		on_hover_exit = function()
+			Pallete.Foreground = prev_color
+		end
+	}
+end

@@ -78,6 +78,126 @@ function combat:enter(previous, difficulty_level)
 	self.effects = {}
 
 	self.heart_index = 1
+	self.heart_position = game_size / 2 - vec2 { 20, 20 }
+	self.heart_size = vec2 { 40, 40 }
+
+
+	self.game_over_ui = ui.UI {
+		ui.CenteredColumn {
+			width = game_size.x,
+			height = game_size.y,
+			separation = 20,
+			ui.Label {
+				text = ' you have been consumed by the beat ',
+				style = {
+					font = MediumFont,
+				}
+			},
+			ui.Button {
+				text = ' try again ',
+				style = {
+					font = MediumFont,
+				},
+				on_pressed = function()
+					scenes:enter(combat, difficulty_level)
+					self.metronome:stop()
+					assets.sounds.successful_hit:play()
+				end
+			},
+			ui.Button {
+				text = ' choose a new path ',
+				style = {
+					font = MediumFont,
+				},
+				on_pressed = function()
+					scenes:pop()
+					self.metronome:stop()
+					assets.sounds.successful_hit:play()
+				end
+			},
+			ui.Button {
+				text = ' leave the realm ',
+				style = {
+					font = MediumFont,
+				},
+				on_pressed = function()
+					assets.sounds.successful_hit:play()
+					love.event.push('quit')
+				end
+			}
+		}
+	}
+	self.win_ui = ui.UI {
+		ui.CenteredColumn {
+			width = game_size.x,
+			height = game_size.y,
+			separation = 20,
+			ui.Label {
+				text = ' you have defeated the beat ',
+				style = {
+					font = MediumFont,
+				}
+			},
+			ui.Button {
+				text = ' choose a new path ',
+				style = {
+					font = MediumFont,
+				},
+				on_pressed = function()
+					scenes:pop()
+					self.metronome:stop()
+					assets.sounds.successful_hit:play()
+				end
+			},
+			ui.Button {
+				text = ' leave the realm ',
+				style = {
+					font = MediumFont,
+				},
+				on_pressed = function()
+					assets.sounds.successful_hit:play()
+					love.event.push('quit')
+				end
+			}
+		}
+	}
+	self.pause_ui = ui.UI {
+		ui.CenteredColumn {
+			width = game_size.x,
+			height = game_size.y,
+			separation = 20,
+			ui.Label {
+				text = 'there is some rest for the wicked',
+				style = {
+					font = MediumFont,
+				}
+			},
+			Button {
+				text = ' continue to fight ',
+				on_pressed = function()
+					self:set_state('combat')
+					self.metronome:set_low_pass_filter_enabled(false)
+				end,
+				hover_color = Colors.Grass
+			},
+			Button {
+				text = ' choose a new path ',
+				on_pressed = function()
+					scenes:pop()
+					self.metronome:stop()
+				end,
+				hover_color = Colors.Teal
+			},
+			Button {
+				text = ' leave the realm ',
+				on_pressed = function()
+					assets.sounds.successful_hit:play()
+					love.event.push('quit')
+				end,
+				hover_color = Colors.Purple
+			}
+		}
+	}
 end
 
 function combat:kill_enemy(enemy)
@@ -86,14 +206,34 @@ function combat:kill_enemy(enemy)
 	self.successful_hits = self.successful_hits + 1
 
 	if self.successful_hits == 10 then
-		self:set_state('upgrade')
+		if self.metronome.tempo_level == 9 then
+			self:set_state('win')
+		else
+			self:set_state('upgrade')
+		end
 	end
 end
 
 function combat:update(delta)
 	self.metronome:update(delta)
 	if self.state == 'combat' then
-		self.enemies:update(delta)
+		local heart_damage_this_turn = false
+		for i = #self.enemies.enemies, 1, -1 do
+			local enemy = self.enemies.enemies[i]
+			enemy:update(delta)
+			if not heart_damage_this_turn and is_point_in_rect(enemy.position, self.heart_position, self.heart_size) then
+				if self.metronome.tempo_level == 1 then
+					self:set_state('game_over')
+					print('dead')
+				else
+					self.metronome:decrease_bpm()
+					table.insert(self.effects, Effects.Clearout(game_size / 2, 200, self))
+					table.remove(self.enemies.enemies, i)
+					heart_damage_this_turn = true
+				end
+			end
+		end
+
 		self.particles:update(delta)
 		for i = #self.effects, 1, -1 do
 			local effect = self.effects[i]
@@ -107,6 +247,12 @@ function combat:update(delta)
 		end
 	elseif self.state == 'upgrade' then
 		self.upgrade_ui:update(delta)
+	elseif self.state == 'game_over' then
+		self.game_over_ui:update(delta)
+	elseif self.state == 'win' then
+		self.win_ui:update(delta)
+	elseif self.state == 'pause' then
+		self.pause_ui:update(delta)
 	end
 	self.tempo_bar_filling = self.successful_hits / 10
 	self.tempo_bar_filled = lerp(self.tempo_bar_filled, self.tempo_bar_filling, 0.08)
@@ -165,17 +311,26 @@ function combat:draw()
 
 	love.graphics.setStencilTest()
 
-	local x, y = love.mouse.getPosition()
-	if self.state == 'upgrade' then
-		self.upgrade_ui:draw()
-		love.graphics.draw(assets.images.cursor, x + 2, y)
-	end
-
 	start_x = love.graphics.getWidth() / 2 - 312
 	start_y = 70
 	for index, upgrade in ipairs(self.upgrades) do
 		local icon = assets.images.upgrades[upgrade.icon]
 		love.graphics.draw(icon, start_x + index * 40, start_y, 0, 1, 1, -10, -10)
+	end
+
+	local x, y = love.mouse.getPosition()
+	if self.state == 'upgrade' then
+		self.upgrade_ui:draw()
+		love.graphics.draw(assets.images.cursor, x + 2, y)
+	elseif self.state == 'game_over' then
+		self.game_over_ui:draw()
+		love.graphics.draw(assets.images.cursor, x + 2, y)
+	elseif self.state == 'win' then
+		self.win_ui:draw()
+		love.graphics.draw(assets.images.cursor, x + 2, y)
+	elseif self.state == 'pause' then
+		self.pause_ui:draw()
+		love.graphics.draw(assets.images.cursor, x + 2, y)
 	end
 end
 
@@ -220,11 +375,24 @@ function combat:mousemoved(x, y, dx, dy)
 
 end
 
+function combat:keypressed(key)
+	if key == 'escape' then
+		if self.state == 'combat' then
+			self:set_state('pause')
+		elseif self.state == 'pause' then
+			self:set_state('combat')
+		end
+	end
+end
+
 function combat:set_state(state)
+	if self.state == 'pause' then
+		self.pause_ui.visible = false
+	end
+
 	if state == 'combat' then
 		self.metronome:set_low_pass_filter_enabled(false)
 		self.state = 'combat'
-		self.upgrade_ui.visible = false
 	elseif state == 'upgrade' then
 		self.state = 'upgrade'
 		self.metronome:set_low_pass_filter_enabled(true)
@@ -253,6 +421,8 @@ function combat:set_state(state)
 					end
 
 					self:set_state('combat')
+					self.upgrade_ui = nil
+
 					self.metronome:increase_bpm()
 					self.successful_hits = 0
 				end,
@@ -296,6 +466,18 @@ function combat:set_state(state)
 				}
 			}
 		}
+	elseif state == 'game_over' then
+		self.state = 'game_over'
+		self.metronome:set_low_pass_filter_enabled(true)
+		self.game_over_ui.visible = true
+	elseif state == 'win' then
+		self.state = 'win'
+		self.metronome:set_low_pass_filter_enabled(true)
+		self.win_ui.visible = true
+	elseif state == 'pause' then
+		self.state = 'pause'
+		self.metronome:set_low_pass_filter_enabled(true)
+		self.pause_ui.visible = true
 	end
 end
 

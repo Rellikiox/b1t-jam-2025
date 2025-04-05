@@ -107,12 +107,6 @@ function EnemyManager:draw()
 	end
 end
 
-function EnemyManager:update(delta)
-	for _, enemy in ipairs(self.enemies) do
-		enemy:update(delta)
-	end
-end
-
 function EnemyManager:remove(enemy)
 	for i, e in ipairs(self.enemies) do
 		if e == enemy then

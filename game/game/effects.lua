@@ -35,6 +35,23 @@ function Riff:draw()
 	love.graphics.draw(assets.images.riff_effect, self.position.x + 64, self.position.y - 96, self.angle, 1, 1, -0, -64)
 end
 
+local Clearout = Effect:extend()
+
+function Clearout:new(position, radius, combat)
+	self.position = position
+	self.radius = radius
+	self.combat = combat
+	self.dead = false
+end
+
+function Clearout:update(delta)
+	local enemies = self.combat.enemies:get_enemies_in_radius(self.position, self.radius)
+	for _, enemy in ipairs(enemies) do
+		self.combat.enemies:remove(enemy)
+	end
+	self.dead = true
+end
+
 return {
-	Riff = Riff
+	Riff = Riff, Clearout = Clearout
 }
