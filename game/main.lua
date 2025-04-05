@@ -17,7 +17,6 @@ assets = require('lib.cargo').init({
 })
 local Coroutines = require 'engine.coroutines'
 scenes = require('lib.roomy').new()
-local moonshine = require 'lib.moonshine'
 local main_menu_scene = require 'scenes.main_menu'
 
 
@@ -33,9 +32,6 @@ function love.load()
 
 	game_size = vec2 { 1280, 720 }
 
-	effect = moonshine(moonshine.effects.crt)
-	effect.crt.scaleFactor = 0.97
-
 	scenes:hook({ exclude = { 'draw' } })
 	scenes:enter(main_menu_scene)
 end
@@ -45,10 +41,8 @@ function love.update(delta)
 end
 
 function love.draw()
-	effect(function()
-		love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
-		Pallete.Foreground:set()
+	love.graphics.setBackgroundColor(unpack(Pallete.Background:to_array()))
+	Pallete.Foreground:set()
 
-		scenes:emit('draw')
-	end)
+	scenes:emit('draw')
 end
