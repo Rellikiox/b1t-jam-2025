@@ -24,6 +24,7 @@ local main_menu_scene = require 'scenes.main_menu'
 function love.load()
 	love.mouse.setVisible(false)
 
+	HugeFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 52, 'mono')
 	LargeFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 39, 'mono')
 	MediumFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 26, 'mono')
 	SmallFont = love.graphics.newFont('assets/fonts/antiquity-print.ttf', 13, 'mono')

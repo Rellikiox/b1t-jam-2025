@@ -65,11 +65,11 @@ function combat:enter(previous, difficulty_level)
 
 	self.dots_canvas = love.graphics.newCanvas(game_size.x, game_size.y)
 	self.dots_canvas:renderTo(function()
-		for x = 1, game_size.x, 10 do
-			for y = 1, game_size.y, 10 do
+		for x = 1, game_size.x, 8 do
+			for y = 1, game_size.y, 8 do
 				local px = x + math.random() * 4
 				local py = y + math.random() * 4
-				love.graphics.circle('fill', px, py, 2)
+				love.graphics.rectangle('fill', px, py, 2, 2)
 			end
 		end
 	end)

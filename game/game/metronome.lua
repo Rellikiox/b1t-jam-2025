@@ -42,6 +42,10 @@ function Metronome:play()
 	self.song:play()
 end
 
+function Metronome:stop()
+	self.song:stop()
+end
+
 function Metronome:increase_bpm()
 	if self.tempo_level == 11 then
 		return

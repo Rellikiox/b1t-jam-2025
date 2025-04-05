@@ -1,46 +1,39 @@
 return {
 	easy = {
 		bpm = 80,
-		bpm_increase = 1,
+		bpm_increase = 2,
 		songs = {
-			{ name = "Three Red Hearts - Three Red Hearts", bpm = 75 },
-			{ name = "Three Red Hearts - Box Jump",       bpm = 80 },
-			{ name = "Three Red Hearts - Go",             bpm = 85 },
+			{ name = "Three_Red_Hearts-Three_Red_Hearts", bpm = 75 },
+			{ name = "Three_Red_Hearts-Box_Jump",         bpm = 80 },
+			{ name = "Three_Red_Hearts-Go",               bpm = 85 },
 		}
 	},
 	medium = {
 		bpm = 90,
-		bpm_increase = 2,
+		bpm_increase = 3,
 		songs = {
-			{ name = "Three Red Hearts - Pixel War 1",       bpm = 90 },
-			{ name = "Three Red Hearts - Pixel War 2",       bpm = 90 },
-			{ name = "Three Red Hearts - Out of Time",       bpm = 90 },
-			{ name = "Three Red Hearts - Rumble at the Gates", bpm = 95 },
-			{ name = "Three Red Hearts - Rabbit Town",       bpm = 96 },
+			{ name = "Three_Red_Hearts-Pixel_War_1",         bpm = 90 },
+			{ name = "Three_Red_Hearts-Out_of_Time",         bpm = 90 },
+			{ name = "Three_Red_Hearts-Rumble_at_the_Gates", bpm = 95 },
 		}
 	},
 	hard = {
 
 		bpm = 100,
-		bpm_increase = 3,
+		bpm_increase = 4,
 		songs = {
-			{ name = "Three Red Hearts - Puzzle Pieces",     bpm = 100 },
-			{ name = "Three Red Hearts - Modern Bits",       bpm = 103 },
-			{ name = "Three Red Hearts - Connected",         bpm = 105 },
-			{ name = "Three Red Hearts - Candy",             bpm = 115 },
-			{ name = "Three Red Hearts - Penguins vs Rabbits", bpm = 125 },
+			{ name = "Three_Red_Hearts-Connected",           bpm = 105 },
+			{ name = "Three_Red_Hearts-Candy",               bpm = 115 },
+			{ name = "Three_Red_Hearts-Penguins_vs_Rabbits", bpm = 125 },
 		}
 	},
 	insane = {
 		bpm = 150,
-		bpm_increase = 4,
+		bpm_increase = 5,
 		songs = {
-			{ name = "Three Red Hearts - Penultimate",  bpm = 140 },
-			{ name = "Three Red Hearts - Princess Quest", bpm = 150 },
-			{ name = "Three Red Hearts - Sanctuary",    bpm = 150 },
-			{ name = "Three Red Hearts - Save the City", bpm = 150 },
-			{ name = "Three Red Hearts - Deep Blue",    bpm = 153 },
-			{ name = "Three Red Hearts - Penguin Town", bpm = 150 },
+			{ name = "Three_Red_Hearts-Sanctuary",     bpm = 150 },
+			{ name = "Three_Red_Hearts-Save_the_City", bpm = 150 },
+			{ name = "Three_Red_Hearts-Deep_Blue",     bpm = 153 },
 		}
 	}
 }

@@ -6,6 +6,10 @@ local Events = require 'engine.events'
 local main_menu = {}
 
 function main_menu:enter(previous, ...)
+	self.metronome = Metronome(100, 10, assets.data.difficulty.insane.songs[1])
+	self.metronome:play()
+	self.metronome:set_low_pass_filter_enabled(true)
+
 	Pallete.Foreground = Colors.Tan
 
 	self.ui = ui.UI {
@@ -14,15 +18,27 @@ function main_menu:enter(previous, ...)
 			height = game_size.y,
 			alignment = ui.Align.Center,
 			justify = ui.Justify.Center,
-			separation = 40,
+			separation = 10,
+			ui.Label {
+				text = 'does a mere human dare to',
+				style = {
+					font = SmallFont,
+				}
+			},
+			ui.Label {
+				text = 'enter the realm of the bat and',
+				style = {
+					font = MediumFont,
+				}
+			},
 			ui.Label {
 				text = 'Survive the Beat',
 				style = {
-					font = LargeFont,
+					font = HugeFont,
 				}
 			},
 			ui.Row {
-				padding = ui.Padding(80)
+				padding = ui.Padding(40)
 			},
 			ui.Label {
 				text = '  summon the bats...  ',
@@ -39,9 +55,11 @@ function main_menu:enter(previous, ...)
 					},
 					on_pressed = function()
 						scenes:enter(combat_scene, 'easy')
+						self.metronome:stop()
 						assets.sounds.successful_hit:play()
 					end,
 					on_hover_enter = function()
+						assets.sounds.successful_hit:play()
 						Pallete.Foreground = Colors.Grass
 					end,
 					on_hover_exit = function()
@@ -55,9 +73,11 @@ function main_menu:enter(previous, ...)
 					},
 					on_pressed = function()
 						scenes:enter(combat_scene, 'medium')
+						self.metronome:stop()
 						assets.sounds.successful_hit:play()
 					end,
 					on_hover_enter = function()
+						assets.sounds.successful_hit:play()
 						Pallete.Foreground = Colors.Yellow
 					end,
 					on_hover_exit = function()
@@ -71,9 +91,11 @@ function main_menu:enter(previous, ...)
 					},
 					on_pressed = function()
 						scenes:enter(combat_scene, 'hard')
+						self.metronome:stop()
 						assets.sounds.successful_hit:play()
 					end,
 					on_hover_enter = function()
+						assets.sounds.successful_hit:play()
 						Pallete.Foreground = Colors.Orange
 					end,
 					on_hover_exit = function()
@@ -87,9 +109,11 @@ function main_menu:enter(previous, ...)
 					},
 					on_pressed = function()
 						scenes:enter(combat_scene, 'insane')
+						self.metronome:stop()
 						assets.sounds.successful_hit:play()
 					end,
 					on_hover_enter = function()
+						assets.sounds.successful_hit:play()
 						Pallete.Foreground = Colors.Red
 					end,
 					on_hover_exit = function()
@@ -110,12 +134,19 @@ function main_menu:enter(previous, ...)
 					assets.sounds.failed_hit:play()
 				end,
 				on_hover_enter = function()
+					assets.sounds.successful_hit:play()
 					Pallete.Foreground = Colors.Purple
 				end,
 				on_hover_exit = function()
 					Pallete.Foreground = Colors.Tan
 				end
-			}
+			},
+			ui.Label {
+				text = 'Music by Abstraction https://abstractionmusic.com/',
+				style = {
+					font = SmallFont,
+				}
+			},
 		}
 	}
 
@@ -139,9 +170,6 @@ function main_menu:draw()
 
 	local x, y = love.mouse.getPosition()
 	love.graphics.draw(assets.images.cursor, x + 2, y)
-
-	love.graphics.setFont(SmallFont)
-	love.graphics.print('Music by Abstraction (https://abstractionmusic.com/)', game_size.x / 2 - 210, game_size.y - 70)
 end
 
 function main_menu:mousemoved(x, y, dx, dy)
