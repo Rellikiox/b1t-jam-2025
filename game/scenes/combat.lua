@@ -266,6 +266,8 @@ function combat:enter(previous, difficulty_level)
 
 	self.shield = 0
 	self.attack_count = 1
+
+	self.border_width = 0
 end
 
 function combat:kill_enemy(enemy)
@@ -342,6 +344,12 @@ function combat:leave(next, ...)
 end
 
 function combat:draw()
+	if self.border_width > 0 then
+		love.graphics.setLineWidth(self.border_width)
+		love.graphics.rectangle('line', 0, 0, game_size.x, game_size.y)
+		love.graphics.setLineWidth(1)
+	end
+
 	love.graphics.draw(assets.images['heart' .. self.heart_index + 1], game_size.x / 2 - 32, game_size.y / 2 - 32)
 
 	love.graphics.setShader(stencil_shader)
@@ -426,7 +434,7 @@ function combat:perform_attack(point, is_safe)
 			self:kill_enemy(enemy_under_mouse[i])
 			for _, upgrade in ipairs(self.upgrades) do
 				if upgrade.on_successful_hit then
-					upgrade:on_successful_hit(enemy_under_mouse[1].position, self)
+					upgrade.on_successful_hit(enemy_under_mouse[1].position, self)
 				end
 			end
 		end
@@ -482,16 +490,12 @@ function combat:set_state(state)
 		self.interactive_timer:start()
 	end
 
-	if self.state == 'pause' then
-		self.pause_ui.visible = false
-	elseif self.state == 'upgrade' then
-		self.upgrade_ui.visible = false
-	end
-
 	if state == 'combat' then
+		self.border_width = 0
 		self.metronome:set_low_pass_filter_enabled(false)
 		self.state = 'combat'
 	elseif state == 'upgrade' then
+		self.border_width = 20
 		self.state = 'upgrade'
 		self.upgrade_ui.visible = true
 		self.metronome:set_low_pass_filter_enabled(true)
@@ -516,7 +520,7 @@ function combat:set_state(state)
 					table.insert(self.upgrades, upgrade)
 
 					if upgrade.on_selected then
-						upgrade:on_selected(self)
+						upgrade.on_selected(self)
 					end
 
 					self:set_state('combat')
@@ -564,26 +568,21 @@ function combat:set_state(state)
 		}
 		self.upgrade_ui.root:calculate_layout()
 	elseif state == 'game_over' then
+		self.border_width = 20
 		self.state = 'game_over'
 		self.metronome:set_low_pass_filter_enabled(true)
 		self.game_over_ui.visible = true
 	elseif state == 'win' then
+		self.border_width = 20
 		self.state = 'win'
 		self.metronome:set_low_pass_filter_enabled(true)
 		self.win_ui.visible = true
 	elseif state == 'pause' then
+		self.border_width = 20
 		self.state = 'pause'
 		self.metronome:set_low_pass_filter_enabled(true)
 		self.pause_ui.visible = true
 	end
-end
-
-function combat:spawn_riff(position)
-	table.insert(self.effects, Effects.Riff(position, vec2.from_angle(math.random() * math.pi * 2)))
-end
-
-function combat:spawn_echo(position)
-	table.insert(self.effects, Effects.Echo(position, self.attack_radius))
 end
 
 return combat
