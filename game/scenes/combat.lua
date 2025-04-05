@@ -223,15 +223,15 @@ function combat:enter(previous, difficulty_level)
 					hover_color = Colors.White
 				},
 				Button {
-					text = '  stop  music  ',
+					text = ' mute   music ',
 					on_pressed = function()
 						if self.music_paused then
-							self.pause_ui.root.children[7].children[2].text = '  stop  music  '
-							self.metronome:change_song(self.metronome.song_data)
+							self.pause_ui.root.children[7].children[2].text = ' mute   music '
+							self.metronome.song:setVolume(0.1)
 							self.music_paused = false
 						else
-							self.pause_ui.root.children[7].children[2].text = ' restart music '
-							self.metronome:stop()
+							self.pause_ui.root.children[7].children[2].text = ' unmute music '
+							self.metronome.song:setVolume(0)
 							self.music_paused = true
 						end
 					end,

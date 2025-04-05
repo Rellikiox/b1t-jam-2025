@@ -116,12 +116,7 @@ function Metronome:set_low_pass_filter_enabled(enabled)
 			highgain = .6,
 		})
 		self.song:setEffect('other_room')
-		self.beat_sfx:setFilter({
-			type     = "lowpass",
-			volume   = .01,
-			highgain = .01,
-		})
-		self.beat_sfx:setVolume(0.001)
+		self.beat_sfx:setVolume(0.2)
 		self.beat_sfx:setEffect('other_room')
 	else
 		self.song:setFilter()

@@ -1,6 +1,6 @@
 --[[
 	TODO
-	- Pause menu - music player
+	- Level indicator
 	- More upgrades
 ]]
 
