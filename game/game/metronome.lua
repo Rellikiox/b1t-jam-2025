@@ -2,8 +2,8 @@ local Events = require 'engine.events'
 
 
 local TempoColors = {
-	Colors.Grass, Colors.Orange, Colors.Yellow, Colors.Pink, Colors.Red,
-	Colors.Violet, Colors.Blue, Colors.Teal, Colors.Purple, Colors.Tan, Colors.White
+	Colors.Grass, Colors.Orange, Colors.Yellow, Colors.Red, Colors.Pink,
+	Colors.Violet, Colors.Blue, Colors.Teal, Colors.Tan, Colors.White
 }
 
 local Metronome = Object:extend()

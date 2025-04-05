@@ -65,6 +65,8 @@ function combat:enter(previous, difficulty_level)
 
 	self.dots_canvas = love.graphics.newCanvas(game_size.x, game_size.y)
 	self.dots_canvas:renderTo(function()
+		love.graphics.setColor(1, 1, 1)
+
 		for x = 1, game_size.x, 8 do
 			for y = 1, game_size.y, 8 do
 				local px = x + math.random() * 4
@@ -72,6 +74,7 @@ function combat:enter(previous, difficulty_level)
 				love.graphics.rectangle('fill', px, py, 2, 2)
 			end
 		end
+		Pallete.Foreground:set()
 	end)
 	self.attack_radius = 30
 
