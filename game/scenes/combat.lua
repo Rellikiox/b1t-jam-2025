@@ -218,7 +218,22 @@ function combat:enter(previous, difficulty_level)
 							assets.data.difficulty[difficulty_level].songs[self.song_index + 1]
 						)
 						self.pause_ui.root.children[6].text = ' currently playing: ' ..
-						self.metronome.song_data.name .. ' '
+							self.metronome.song_data.name .. ' '
+					end,
+					hover_color = Colors.White
+				},
+				Button {
+					text = '  stop  music  ',
+					on_pressed = function()
+						if self.music_paused then
+							self.pause_ui.root.children[7].children[2].text = '  stop  music  '
+							self.metronome:change_song(self.metronome.song_data)
+							self.music_paused = false
+						else
+							self.pause_ui.root.children[7].children[2].text = ' restart music '
+							self.metronome:stop()
+							self.music_paused = true
+						end
 					end,
 					hover_color = Colors.White
 				},
@@ -230,7 +245,7 @@ function combat:enter(previous, difficulty_level)
 							assets.data.difficulty[difficulty_level].songs[self.song_index + 1]
 						)
 						self.pause_ui.root.children[6].text = ' currently playing: ' ..
-						self.metronome.song_data.name .. ' '
+							self.metronome.song_data.name .. ' '
 					end,
 					hover_color = Colors.White
 				}
