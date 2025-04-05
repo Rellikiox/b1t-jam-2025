@@ -1,6 +1,5 @@
 --[[
 	TODO
-	- Level indicator
 	- More upgrades
 ]]
 

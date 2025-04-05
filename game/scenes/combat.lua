@@ -33,6 +33,11 @@ function combat:enter(previous, difficulty_level)
 
 	Events:listen(self, 'half_beat', function()
 		self.heart_index = (self.heart_index + 1) % 2
+		if self.state == 'combat' then
+			for _, effect in ipairs(self.effects) do
+				effect:on_half_beat(self)
+			end
+		end
 	end)
 	Events:listen(self, 'beat', function()
 		if self.state == 'combat' then
@@ -41,6 +46,8 @@ function combat:enter(previous, difficulty_level)
 			end
 		end
 	end)
+
+
 
 	self.interactive_timer = Timer {
 		autostart = false,
@@ -408,6 +415,20 @@ function combat:draw()
 			start_x = love.graphics.getWidth() / 2 - 312
 			start_y = start_y + 40
 		end
+	end
+
+	start_x = 25
+	start_y = 110
+	love.graphics.setFont(SmallFont)
+	for i = 1, 10 do
+		local width = 2
+		if self.metronome.tempo_level == i then
+			width = 7
+		end
+
+		love.graphics.rectangle('fill', start_x, start_y, width, 42)
+		love.graphics.print(i, 35 + width, start_y + 10)
+		start_y = start_y + 50
 	end
 
 	local x, y = love.mouse.getPosition()

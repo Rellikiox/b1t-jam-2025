@@ -60,13 +60,19 @@ function Echo:new(position, radius)
 	self.dead = false
 end
 
+function Echo:on_half_beat(combat)
+	self.enabled = true
+end
+
 function Echo:on_beat(combat)
-	combat:perform_attack(self.position, true)
-	self.dead = true
+	if self.enabled then
+		combat:perform_attack(self.position, true)
+		self.dead = true
+	end
 end
 
 function Echo:draw()
-	love.graphics.circle('line', self.position.x, self.position.y, self.radius)
+	love.graphics.circle('fill', self.position.x, self.position.y, self.radius)
 end
 
 return {

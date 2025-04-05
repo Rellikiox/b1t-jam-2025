@@ -58,7 +58,7 @@ return {
 			combat.shield = combat.shield + 1
 		end
 	},
-	mutinote = {
+	multinote = {
 		name = 'Multinote',
 		description = 'Attacks an additional enemy on every successful hit.',
 		icon = "multinote",
