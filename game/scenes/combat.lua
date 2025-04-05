@@ -42,6 +42,17 @@ function combat:enter(previous, difficulty_level)
 		end
 	end)
 
+	self.interactive_timer = Timer {
+		autostart = false,
+		timeout = 0.5,
+		callback = function()
+			self.upgrade_ui.interactive = true
+			self.win_ui.interactive = true
+			self.game_over_ui.interactive = true
+			self.pause_ui.interactive = true
+		end
+	}
+
 	self.successful_hits = 0
 
 	self.hits_spritesheet = {}
@@ -62,7 +73,6 @@ function combat:enter(previous, difficulty_level)
 	self.tempo_bar_filled = 0
 
 	self.upgrades = {}
-	self.upgrade_ui = nil
 
 	self.dots_canvas = love.graphics.newCanvas(game_size.x, game_size.y)
 	self.dots_canvas:renderTo(function()
@@ -86,6 +96,7 @@ function combat:enter(previous, difficulty_level)
 	self.heart_size = vec2 { 40, 40 }
 
 
+	self.upgrade_ui = ui.UI { visible = false, ui.CenteredColumn {} }
 	self.game_over_ui = ui.UI {
 		ui.CenteredColumn {
 			width = game_size.x,
@@ -252,6 +263,9 @@ function combat:enter(previous, difficulty_level)
 			}
 		}
 	}
+
+	self.shield = 0
+	self.attack_count = 1
 end
 
 function combat:kill_enemy(enemy)
@@ -269,6 +283,9 @@ function combat:kill_enemy(enemy)
 end
 
 function combat:update(delta)
+	if self.state ~= 'combat' then
+		self.interactive_timer:increment(delta)
+	end
 	self.metronome:update(delta)
 	if self.state == 'combat' then
 		local heart_damage_this_turn = false
@@ -276,14 +293,22 @@ function combat:update(delta)
 			local enemy = self.enemies.enemies[i]
 			enemy:update(delta)
 			if not heart_damage_this_turn and is_point_in_rect(enemy.position, self.heart_position, self.heart_size) then
-				if self.metronome.tempo_level == 1 then
-					self:set_state('game_over')
-					print('dead')
+				table.remove(self.enemies.enemies, i)
+
+				if self.shield > 0 then
+					self.shield = self.shield - 1
+					assets.sounds.shield:play()
 				else
-					self.metronome:decrease_bpm()
-					table.insert(self.effects, Effects.Clearout(game_size / 2, 200, self))
-					table.remove(self.enemies.enemies, i)
-					heart_damage_this_turn = true
+					assets.sounds.damage:play()
+
+					if self.metronome.tempo_level == 1 then
+						self:set_state('game_over')
+						print('dead')
+					else
+						self.metronome:decrease_bpm()
+						table.insert(self.effects, Effects.Clearout(game_size / 2, 200, self))
+						heart_damage_this_turn = true
+					end
 				end
 			end
 		end
@@ -369,7 +394,12 @@ function combat:draw()
 	start_y = 70
 	for index, upgrade in ipairs(self.upgrades) do
 		local icon = assets.images.upgrades[upgrade.icon]
-		love.graphics.draw(icon, start_x + index * 40, start_y, 0, 1, 1, -10, -10)
+		love.graphics.draw(icon, start_x, start_y, 0, 1, 1, -10, -10)
+		start_x = start_x + 40
+		if index % 16 == 0 then
+			start_x = love.graphics.getWidth() / 2 - 312
+			start_y = start_y + 40
+		end
 	end
 
 	local x, y = love.mouse.getPosition()
@@ -388,28 +418,32 @@ function combat:draw()
 	end
 end
 
-function combat:mousepressed(x, y, button)
-	if self.state == 'upgrade' then
-		return
-	end
-
-	if button == 1 then
-		local point = vec2 { x, y }
-		local enemy_under_mouse = self.enemies:get_enemies_in_radius(point, self.attack_radius)
-		local on_beat = self.metronome:is_on_beat()
-		if on_beat and #enemy_under_mouse > 0 then
-			assets.sounds.successful_hit:play()
+function combat:perform_attack(point, is_safe)
+	local enemy_under_mouse = self.enemies:get_enemies_in_radius(point, self.attack_radius)
+	local on_beat = self.metronome:is_on_beat()
+	if on_beat and #enemy_under_mouse > 0 then
+		for i = 1, math.min(self.attack_count, #enemy_under_mouse) do
+			self:kill_enemy(enemy_under_mouse[i])
 			for _, upgrade in ipairs(self.upgrades) do
 				if upgrade.on_successful_hit then
 					upgrade:on_successful_hit(enemy_under_mouse[1].position, self)
 				end
 			end
-
-			self:kill_enemy(enemy_under_mouse[1])
-		else
-			assets.sounds.failed_hit:play()
-			self.successful_hits = 0
 		end
+		assets.sounds.successful_hit:play()
+	elseif not is_safe then
+		assets.sounds.failed_hit:play()
+		self.successful_hits = 0
+	end
+end
+
+function combat:mousepressed(x, y, button)
+	if self.state ~= 'combat' then
+		return
+	end
+
+	if button == 1 then
+		self:perform_attack(vec2 { x, y }, false)
 	elseif button == 2 then
 		if self.enabled then
 			self.enabled = false
@@ -440,8 +474,18 @@ function combat:keypressed(key)
 end
 
 function combat:set_state(state)
+	if self.state ~= 'combat' then
+		self.upgrade_ui.interactive = false
+		self.win_ui.interactive = false
+		self.game_over_ui.interactive = false
+		self.pause_ui.interactive = false
+		self.interactive_timer:start()
+	end
+
 	if self.state == 'pause' then
 		self.pause_ui.visible = false
+	elseif self.state == 'upgrade' then
+		self.upgrade_ui.visible = false
 	end
 
 	if state == 'combat' then
@@ -449,6 +493,7 @@ function combat:set_state(state)
 		self.state = 'combat'
 	elseif state == 'upgrade' then
 		self.state = 'upgrade'
+		self.upgrade_ui.visible = true
 		self.metronome:set_low_pass_filter_enabled(true)
 		local available_upgrades = {}
 		for upgrade_name, _ in pairs(assets.data.upgrades) do
@@ -475,7 +520,6 @@ function combat:set_state(state)
 					end
 
 					self:set_state('combat')
-					self.upgrade_ui = nil
 
 					self.metronome:increase_bpm()
 					self.successful_hits = 0
@@ -498,28 +542,27 @@ function combat:set_state(state)
 		end
 
 
-		self.upgrade_ui = ui.UI {
-			ui.CenteredColumn {
-				width = game_size.x,
-				height = game_size.y,
-				separation = 20,
-				ui.Label {
-					text = 'Choose your boon...',
-					style = {
-						font = MediumFont,
-					}
-				},
-				ui.Row {
-					separation = 20,
-					buttons[1],
-					buttons[2],
-					buttons[3],
-				},
-				ui.Label {
-					text = ''
+		self.upgrade_ui.root = ui.CenteredColumn {
+			width = game_size.x,
+			height = game_size.y,
+			separation = 20,
+			ui.Label {
+				text = 'Choose your boon...',
+				style = {
+					font = MediumFont,
 				}
+			},
+			ui.Row {
+				separation = 20,
+				buttons[1],
+				buttons[2],
+				buttons[3],
+			},
+			ui.Label {
+				text = ''
 			}
 		}
+		self.upgrade_ui.root:calculate_layout()
 	elseif state == 'game_over' then
 		self.state = 'game_over'
 		self.metronome:set_low_pass_filter_enabled(true)
@@ -537,6 +580,10 @@ end
 
 function combat:spawn_riff(position)
 	table.insert(self.effects, Effects.Riff(position, vec2.from_angle(math.random() * math.pi * 2)))
+end
+
+function combat:spawn_echo(position)
+	table.insert(self.effects, Effects.Echo(position, self.attack_radius))
 end
 
 return combat

@@ -52,6 +52,23 @@ function Clearout:update(delta)
 	self.dead = true
 end
 
+local Echo = Effect:extend()
+
+function Echo:new(position, radius)
+	self.position = position
+	self.radius = radius
+	self.dead = false
+end
+
+function Echo:on_beat(combat)
+	combat:perform_attack(self.position, true)
+	self.dead = true
+end
+
+function Echo:draw()
+	love.graphics.circle('line', self.position.x, self.position.y, self.radius)
+end
+
 return {
-	Riff = Riff, Clearout = Clearout
+	Riff = Riff, Clearout = Clearout, Echo = Echo,
 }

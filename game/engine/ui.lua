@@ -27,11 +27,12 @@ function UI:new(args)
 	self.position = args.position or vec2.zero
 	self.root = args[1]
 	self.visible = args.visible or true
+	self.interactive = args.interactive or true
 	self.root:calculate_layout()
 end
 
 function UI:update(delta)
-	if self.visible then
+	if self.visible and self.interactive then
 		local x, y = love.mouse.getPosition()
 		self.root:update_pointer_state(x, y, love.mouse.isDown(1))
 		self.root:update(delta)
