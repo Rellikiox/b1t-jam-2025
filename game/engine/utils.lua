@@ -2,7 +2,7 @@ function table.shuffle(tab)
 	local len = #tab
 	local r, tmp
 	for i = 1, len do
-		r = math.random(i, len)
+		r = love.math.random(i, len)
 		tmp = tab[i]
 		tab[i] = tab[r]
 		tab[r] = tmp
@@ -27,7 +27,7 @@ function exp_smoothing(a, b, speed, delta)
 end
 
 function random_choice(list)
-	return list[math.random(#list)]
+	return list[love.math.random(#list)]
 end
 
 function Timer(args)
@@ -127,7 +127,7 @@ function table.dump(t)
 end
 
 function random_range(from, to)
-	return from + math.random() * (to - from)
+	return from + love.math.random() * (to - from)
 end
 
 function hex_to_rgb(hex)
@@ -152,7 +152,7 @@ function choose_n(list, n)
 
 	local result = {}
 	for i = 1, n do
-		local index = math.random(1, #temp_list)
+		local index = love.math.random(1, #temp_list)
 		table.insert(result, temp_list[index])
 		table.remove(temp_list, index)
 	end

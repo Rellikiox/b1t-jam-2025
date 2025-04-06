@@ -21,11 +21,11 @@ function Particles:spawn(position, intensity)
 		local particle = {
 			position = position,
 			lifetime = self.particle_lifetime * intensity,
-			speed = self.particle_speed * math.random(intensity),
-			scale = math.random() * 0.2 + 0.9,
-			direction = vec2.from_angle(math.random() * math.pi * 2):normalized(),
-			quad = self.quads[math.random(#self.quads)],
-			rotation = math.random() * math.pi * 2
+			speed = self.particle_speed * love.math.random(intensity),
+			scale = love.math.random() * 0.2 + 0.9,
+			direction = vec2.from_angle(love.math.random() * math.pi * 2):normalized(),
+			quad = self.quads[love.math.random(#self.quads)],
+			rotation = love.math.random() * math.pi * 2
 		}
 		table.insert(self.particles, particle)
 	end

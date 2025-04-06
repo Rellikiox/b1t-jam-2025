@@ -33,7 +33,6 @@ function Riff:on_beat(combat)
 	local enemies = combat.enemies:get_enemies_in_radius(self.position + self.direction * 8, 30)
 	if #enemies >= 1 then
 		combat:kill_enemy(enemies[1])
-		self.dead = true
 	end
 end
 
@@ -64,6 +63,7 @@ function Echo:new(position, radius)
 	self.position = position
 	self.radius = radius
 	self.dead = false
+	self.beats = 10
 end
 
 function Echo:on_half_beat(combat)
@@ -73,12 +73,17 @@ end
 function Echo:on_beat(combat)
 	if self.enabled then
 		combat:perform_attack(self.position, true)
-		self.dead = true
+		self.beats = self.beats - 1
+		if self.beats == 0 then
+			self.dead = true
+		end
 	end
 end
 
 function Echo:draw()
-	love.graphics.circle('fill', self.position.x, self.position.y, self.radius)
+	love.graphics.setLineWidth(3)
+	love.graphics.circle('line', self.position.x, self.position.y, self.radius)
+	love.graphics.setLineWidth(1)
 end
 
 return {

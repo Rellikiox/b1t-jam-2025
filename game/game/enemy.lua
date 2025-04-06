@@ -92,7 +92,7 @@ end
 
 function EnemyManager:spawn_enemy()
 	local radius = game_size.x / 2
-	local position = vec2.from_angle(math.random() * math.pi * 2) * radius +
+	local position = vec2.from_angle(love.math.random() * math.pi * 2) * radius +
 		game_size / 2
 	local enemy = Enemy {
 		position = position,

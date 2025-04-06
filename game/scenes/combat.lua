@@ -23,7 +23,7 @@ function combat:enter(previous, difficulty_level)
 	self.state = 'combat'
 
 	local difficulty = assets.data.difficulty[difficulty_level]
-	self.song_index = math.random(0, 2)
+	self.song_index = love.math.random(0, 2)
 	self.metronome = Metronome(
 		difficulty.bpm,
 		difficulty.bpm_increase,
@@ -31,6 +31,7 @@ function combat:enter(previous, difficulty_level)
 	)
 	self.metronome:play()
 
+	self.extra_probability = 0
 	self.kills_per_level = difficulty.kills_per_level
 	self.reset_on_fails = difficulty.resets_on_fails
 
@@ -81,7 +82,7 @@ function combat:enter(previous, difficulty_level)
 	self.tempo_bar_filled = 0
 
 
-	self.attack_radius = 30
+	self.attack_radius = 20
 	self.shield = 0
 	self.attack_count = 1
 	self.upgrades = {}
@@ -105,8 +106,8 @@ function combat:enter(previous, difficulty_level)
 
 		for x = 1, game_size.x, 8 do
 			for y = 1, game_size.y, 8 do
-				local px = x + math.random() * 4
-				local py = y + math.random() * 4
+				local px = x + love.math.random() * 4
+				local py = y + love.math.random() * 4
 				love.graphics.rectangle('fill', px, py, 2, 2)
 			end
 		end
@@ -166,6 +167,7 @@ function combat:enter(previous, difficulty_level)
 			}
 		}
 	}
+
 	self.time_taken = 0
 	self.total_kills = 0
 	self.win_ui = ui.UI {
@@ -311,7 +313,7 @@ function combat:kill_enemy(enemy)
 	self.successful_hits = self.successful_hits + 1
 
 	if self.successful_hits == self.metronome.tempo_level * self.kills_per_level then
-		if self.metronome.tempo_level == 9 then
+		if self.metronome.tempo_level == 10 then
 			self:set_state('win')
 		else
 			self:set_state('upgrade')
@@ -396,9 +398,7 @@ function combat:draw()
 
 	love.graphics.setShader(stencil_shader)
 	love.graphics.stencil(function()
-		love.graphics.setLineWidth(self.attack_radius / 2)
-		love.graphics.circle('line', love.mouse.getX(), love.mouse.getY(), self.attack_radius / 2)
-		love.graphics.setLineWidth(1)
+		love.graphics.circle('fill', love.mouse.getX(), love.mouse.getY(), self.attack_radius)
 
 		for _, effect in ipairs(self.effects) do
 			if effect:is(Effects.Riff) then
@@ -497,8 +497,26 @@ function combat:perform_attack(point, is_safe)
 			end
 		end
 		assets.sounds.successful_hit:play()
-	elseif not is_safe and self.reset_on_fails then
+	else
+		if is_safe then
+			return
+		end
+
 		assets.sounds.failed_hit:play()
+
+		if not self.reset_on_fails then
+			return
+		end
+
+		for _, upgrade in ipairs(self.upgrades) do
+			if upgrade.on_failed_hit then
+				local should_fail = upgrade.on_failed_hit(self)
+				if not should_fail then
+					assets.sounds.saved:play()
+					return
+				end
+			end
+		end
 		self.successful_hits = 0
 	end
 end
@@ -549,6 +567,7 @@ function combat:set_state(state)
 	end
 
 	if state == 'combat' then
+		self.metronome:set_current_color()
 		self.border_width = 0
 		self.metronome:set_low_pass_filter_enabled(false)
 		self.state = 'combat'

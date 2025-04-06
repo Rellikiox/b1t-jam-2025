@@ -126,4 +126,8 @@ function Metronome:set_low_pass_filter_enabled(enabled)
 	end
 end
 
+function Metronome:set_current_color()
+	Pallete.Foreground = TempoColors[self.tempo_level]
+end
+
 return Metronome
