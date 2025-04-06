@@ -10,8 +10,9 @@ function Enemy:new(args)
 	self.next_position = self:get_next_position()
 	self.frames = args.frames
 	self.frame = 1
-	self.move_step = 1
+	self.move_step = 0
 	self.beat_needs_update = true
+	self.beats_to_move = args.beats_to_move
 end
 
 function Enemy:get_next_position()
@@ -30,8 +31,8 @@ function Enemy:update(delta)
 	self.position = exp_smoothing(self.position, self.target_position, 3, delta)
 	if self.beat_needs_update then
 		self.move_step = self.move_step + 1
-		if self.move_step > 3 then
-			self.move_step = 1
+		if self.move_step >= self.beats_to_move then
+			self.move_step = 0
 			self.target_position = self.next_position
 			self.next_position = self:get_next_position()
 		end
@@ -50,35 +51,34 @@ end
 
 local EnemyManager = Object:extend()
 
-function EnemyManager:new()
-	self.next_spawn_in = 0
-	self.spawn_interval = 1
+function EnemyManager:new(all_spawns_per_beat, beats_to_move)
+	self.all_spawns_per_beat = all_spawns_per_beat
+	self.spawns_per_beat = all_spawns_per_beat[1]
+
+	self.beats_to_move = beats_to_move
 
 	self.enemies = {}
 	Events:listen(self, 'beat', function(args)
 		for _, enemy in ipairs(self.enemies) do
 			enemy:on_beat()
 		end
-		if self.next_spawn_in <= 0 then
+		for _ = 1, self.spawns_per_beat do
 			self:spawn_enemy()
-			self.next_spawn_in = self.next_spawn_in + self.spawn_interval
-		else
-			self.next_spawn_in = self.next_spawn_in - 1
 		end
 	end)
-	Events:listen(self, 'half_beat', function(args)
+	Events:listen(self, 'half_beat', function()
 		for _, enemy in ipairs(self.enemies) do
 			enemy:on_half_beat()
 		end
 	end)
 	Events:listen(self, 'tempo_up', function(tempo_level)
-		self.spawn_interval = self.spawn_interval - 0.07
-		for i = 1, 10 do
+		self.spawns_per_beat = self.all_spawns_per_beat[tempo_level]
+		for _ = 1, self.spawns_per_beat do
 			self:spawn_enemy()
 		end
 	end)
 	Events:listen(self, 'tempo_down', function(tempo_level)
-		self.spawn_interval = self.spawn_interval + 0.07
+		self.spawns_per_beat = self.all_spawns_per_beat[tempo_level]
 	end)
 
 	self.bat_frames = {
@@ -91,12 +91,13 @@ function EnemyManager:new()
 end
 
 function EnemyManager:spawn_enemy()
-	local radius = (game_size / 2):length()
+	local radius = game_size.x / 2
 	local position = vec2.from_angle(math.random() * math.pi * 2) * radius +
 		game_size / 2
 	local enemy = Enemy {
 		position = position,
 		frames = self.bat_frames,
+		beats_to_move = self.beats_to_move
 	}
 	table.insert(self.enemies, enemy)
 end

@@ -55,6 +55,8 @@ Pallete = {
 
 function Button(args)
 	local prev_color = Pallete.Foreground
+	local hover_enter = args.on_hover_enter or function() end
+	local hover_exit = args.on_hover_exit or function() end
 	return ui.Button {
 		text = args.text,
 		style = {
@@ -68,9 +70,11 @@ function Button(args)
 			prev_color = Pallete.Foreground
 			Pallete.Foreground = args.hover_color
 			assets.sounds.successful_hit:play()
+			hover_enter()
 		end,
 		on_hover_exit = function()
 			Pallete.Foreground = prev_color
+			hover_exit()
 		end
 	}
 end

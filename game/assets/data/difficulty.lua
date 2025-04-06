@@ -1,5 +1,5 @@
 return {
-	easy = {
+	calm = {
 		bpm = 80,
 		bpm_increase = 2,
 		songs = {
@@ -17,10 +17,15 @@ return {
 				path = "Three_Red_Hearts-Go",
 				bpm = 85,
 				name = "Three Red Hearts - Go",
-			},
-		}
+			}
+		},
+		beats_to_move = 6,
+		kills_per_level = 3,
+		spawns_per_beat = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+		starting_upgrades = 5,
+		resets_on_fails = false
 	},
-	medium = {
+	frenzy = {
 		bpm = 90,
 		bpm_increase = 3,
 		songs = {
@@ -39,10 +44,14 @@ return {
 				bpm = 95,
 				name = "Three Red Hearts - Rumble at the Gates",
 			},
-		}
+		},
+		beats_to_move = 5,
+		kills_per_level = 4,
+		spawns_per_beat = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+		starting_upgrades = 3,
+		resets_on_fails = true
 	},
-	hard = {
-
+	bloodlust = {
 		bpm = 100,
 		bpm_increase = 4,
 		songs = {
@@ -61,27 +70,11 @@ return {
 				bpm = 125,
 				name = "Three Red Hearts - Penguins vs Rabbits",
 			},
-		}
-	},
-	insane = {
-		bpm = 150,
-		bpm_increase = 5,
-		songs = {
-			{
-				path = "Three_Red_Hearts-Sanctuary",
-				bpm = 150,
-				name = "Three Red Hearts - Sanctuary",
-			},
-			{
-				path = "Three_Red_Hearts-Save_the_City",
-				bpm = 150,
-				name = "Three Red Hearts - Save the City",
-			},
-			{
-				path = "Three_Red_Hearts-Deep_Blue",
-				bpm = 153,
-				name = "Three Red Hearts - Deep Blue",
-			},
-		}
+		},
+		beats_to_move = 4,
+		kills_per_level = 5,
+		spawns_per_beat = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+		starting_upgrades = 0,
+		resets_on_fails = true
 	}
 }

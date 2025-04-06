@@ -6,11 +6,35 @@ local Events = require 'engine.events'
 local main_menu = {}
 
 function main_menu:enter(previous, ...)
-	self.metronome = Metronome(100, 10, assets.data.difficulty.insane.songs[1])
+	self.metronome = Metronome(100, 10, {
+		path = "Three_Red_Hearts-Sanctuary",
+		bpm = 150,
+		name = "Three Red Hearts - Sanctuary",
+	})
 	self.metronome:play()
 	self.metronome:set_low_pass_filter_enabled(true)
 
 	Pallete.Foreground = Colors.Tan
+
+	local set_difficulty_text = function(ui_node, difficulty)
+		local data = assets.data.difficulty[difficulty]
+		ui_node.children[7].text = data.bpm .. ' bpm ( +' .. data.bpm_increase .. ' bpm per level )'
+		ui_node.children[8].text = 'kill ' .. data.kills_per_level .. ' bats times the current level to satisfy the beat'
+		ui_node.children[9].text = 'starts with ' .. data.starting_upgrades .. ' boons'
+		local text = 'nothing happens if you misclick'
+		if data.resets_on_fails then
+			text = 'kills reset on misclicks'
+		end
+		ui_node.children[10].text = text
+		ui_node:calculate_layout()
+	end
+
+	local reset_difficulty_text = function(ui_node)
+		ui_node.children[7].text = ''
+		ui_node.children[8].text = ''
+		ui_node.children[9].text = ''
+		ui_node.children[10].text = ''
+	end
 
 	self.ui = ui.UI {
 		ui.CenteredColumn {
@@ -38,7 +62,7 @@ function main_menu:enter(previous, ...)
 				}
 			},
 			ui.Row {
-				padding = ui.Padding(40)
+				padding = ui.Padding(20)
 			},
 			ui.Label {
 				text = '  summon the bats...  ',
@@ -49,40 +73,74 @@ function main_menu:enter(previous, ...)
 			ui.Row {
 				separation = 10,
 				Button({
-					text = '  easy  ',
+					text = '  calm  ',
 					on_pressed = function()
-						scenes:push(combat_scene, 'easy')
+						scenes:push(combat_scene, 'calm')
 						self.metronome:stop()
 					end,
-					hover_color = Colors.Grass
+					hover_color = Colors.Grass,
+					on_hover_enter = function()
+						set_difficulty_text(self.ui.root, 'calm')
+					end,
+					on_hover_exit = function()
+						reset_difficulty_text(self.ui.root)
+					end
 				}),
 				Button {
-					text = ' medium ',
+					text = ' frenzy ',
 					on_pressed = function()
-						scenes:push(combat_scene, 'medium')
+						scenes:push(combat_scene, 'frenzy')
 						self.metronome:stop()
 					end,
-					hover_color = Colors.Yellow
+					hover_color = Colors.Yellow,
+					on_hover_enter = function()
+						set_difficulty_text(self.ui.root, 'frenzy')
+					end,
+					on_hover_exit = function()
+						reset_difficulty_text(self.ui.root)
+					end
 				},
 				Button {
-					text = ' hard ',
+					text = ' bloodlust ',
 					on_pressed = function()
-						scenes:push(combat_scene, 'hard')
+						scenes:push(combat_scene, 'bloodlust')
 						self.metronome:stop()
 					end,
-					hover_color = Colors.Orange
-				},
-				Button {
-					text = ' insane ',
-					on_pressed = function()
-						scenes:push(combat_scene, 'insane')
-						self.metronome:stop()
+					hover_color = Colors.Red,
+					on_hover_enter = function()
+						set_difficulty_text(self.ui.root, 'bloodlust')
 					end,
-					hover_color = Colors.Red
+					on_hover_exit = function()
+						reset_difficulty_text(self.ui.root)
+					end
 				},
 			},
+			ui.Label {
+				text = '',
+				style = {
+					font = SmallFont,
+				}
+			},
+			ui.Label {
+				text = '',
+				style = {
+					font = SmallFont,
+				}
+			},
+			ui.Label {
+				text = '',
+				style = {
+					font = SmallFont,
+				}
+			},
+			ui.Label {
+				text = '',
+				style = {
+					font = SmallFont,
+				}
+			},
 			ui.Row {
-				padding = ui.Padding(30)
+				padding = ui.Padding(10)
 			},
 			ui.Button {
 				text = '  abbandon the beat  ',

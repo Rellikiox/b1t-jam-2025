@@ -9,6 +9,12 @@ end
 function Effect:draw()
 end
 
+function Effect:on_beat(combat)
+end
+
+function Effect:on_half_beat(combat)
+end
+
 local Riff = Effect:extend()
 
 function Riff:new(position, direction)

@@ -31,6 +31,9 @@ function combat:enter(previous, difficulty_level)
 	)
 	self.metronome:play()
 
+	self.kills_per_level = difficulty.kills_per_level
+	self.reset_on_fails = difficulty.resets_on_fails
+
 	Events:listen(self, 'half_beat', function()
 		self.heart_index = (self.heart_index + 1) % 2
 		if self.state == 'combat' then
@@ -46,8 +49,6 @@ function combat:enter(previous, difficulty_level)
 			end
 		end
 	end)
-
-
 
 	self.interactive_timer = Timer {
 		autostart = false,
@@ -72,14 +73,31 @@ function combat:enter(previous, difficulty_level)
 		)
 	end
 
-	self.enemies = Enemy.EnemyManager()
+	self.enemies = Enemy.EnemyManager(difficulty.spawns_per_beat, difficulty.beats_to_move)
 	self.enemies:spawn_enemy()
 
 	self.particles = Particles()
 	self.tempo_bar_filling = 0
 	self.tempo_bar_filled = 0
 
+
+	self.attack_radius = 30
+	self.shield = 0
+	self.attack_count = 1
 	self.upgrades = {}
+
+	for i = 1, difficulty.starting_upgrades do
+		local available_upgrades = {}
+		for upgrade_name, _ in pairs(assets.data.upgrades) do
+			table.insert(available_upgrades, upgrade_name)
+		end
+		table.shuffle(available_upgrades)
+		local upgrade = table.shallow_copy(assets.data.upgrades[available_upgrades[1]])
+		table.insert(self.upgrades, upgrade)
+		if upgrade.on_selected then
+			upgrade.on_selected(self)
+		end
+	end
 
 	self.dots_canvas = love.graphics.newCanvas(game_size.x, game_size.y)
 	self.dots_canvas:renderTo(function()
@@ -94,14 +112,13 @@ function combat:enter(previous, difficulty_level)
 		end
 		Pallete.Foreground:set()
 	end)
-	self.attack_radius = 30
+
 
 	self.effects = {}
 
 	self.heart_index = 1
 	self.heart_position = game_size / 2 - vec2 { 20, 20 }
 	self.heart_size = vec2 { 40, 40 }
-
 
 	self.upgrade_ui = ui.UI { visible = false, ui.CenteredColumn {} }
 	self.game_over_ui = ui.UI {
@@ -149,6 +166,8 @@ function combat:enter(previous, difficulty_level)
 			}
 		}
 	}
+	self.time_taken = 0
+	self.total_kills = 0
 	self.win_ui = ui.UI {
 		ui.CenteredColumn {
 			width = game_size.x,
@@ -156,6 +175,12 @@ function combat:enter(previous, difficulty_level)
 			separation = 20,
 			ui.Label {
 				text = ' you have defeated the beat ',
+				style = {
+					font = MediumFont,
+				}
+			},
+			ui.Label {
+				text = ' you killed ' .. self.total_kills .. ' bats in ' .. string.format('%.2f', self.time_taken) .. ' seconds ',
 				style = {
 					font = MediumFont,
 				}
@@ -274,15 +299,18 @@ function combat:enter(previous, difficulty_level)
 	self.shield = 0
 	self.attack_count = 1
 
+	self.total_kills = 0
+	self.time_taken = 0
 	self.border_width = 0
 end
 
 function combat:kill_enemy(enemy)
 	self.enemies:remove(enemy)
+	self.total_kills = self.total_kills + 1
 	self.particles:spawn(enemy.position, self.metronome.tempo_level)
 	self.successful_hits = self.successful_hits + 1
 
-	if self.successful_hits == 10 then
+	if self.successful_hits == self.metronome.tempo_level * self.kills_per_level then
 		if self.metronome.tempo_level == 9 then
 			self:set_state('win')
 		else
@@ -297,6 +325,7 @@ function combat:update(delta)
 	end
 	self.metronome:update(delta)
 	if self.state == 'combat' then
+		self.time_taken = self.time_taken + delta
 		local heart_damage_this_turn = false
 		for i = #self.enemies.enemies, 1, -1 do
 			local enemy = self.enemies.enemies[i]
@@ -342,7 +371,7 @@ function combat:update(delta)
 	elseif self.state == 'pause' then
 		self.pause_ui:update(delta)
 	end
-	self.tempo_bar_filling = self.successful_hits / 10
+	self.tempo_bar_filling = self.successful_hits / (self.metronome.tempo_level * self.kills_per_level)
 	self.tempo_bar_filled = lerp(self.tempo_bar_filled, self.tempo_bar_filling, 0.08)
 end
 
@@ -359,6 +388,12 @@ function combat:draw()
 
 	love.graphics.draw(assets.images['heart' .. self.heart_index + 1], game_size.x / 2 - 32, game_size.y / 2 - 32)
 
+	for _, effect in ipairs(self.effects) do
+		if not effect:is(Effects.Riff) then
+			effect:draw()
+		end
+	end
+
 	love.graphics.setShader(stencil_shader)
 	love.graphics.stencil(function()
 		love.graphics.setLineWidth(self.attack_radius / 2)
@@ -366,7 +401,9 @@ function combat:draw()
 		love.graphics.setLineWidth(1)
 
 		for _, effect in ipairs(self.effects) do
-			effect:draw()
+			if effect:is(Effects.Riff) then
+				effect:draw()
+			end
 		end
 	end)
 	love.graphics.setShader()
@@ -460,7 +497,7 @@ function combat:perform_attack(point, is_safe)
 			end
 		end
 		assets.sounds.successful_hit:play()
-	elseif not is_safe then
+	elseif not is_safe and self.reset_on_fails then
 		assets.sounds.failed_hit:play()
 		self.successful_hits = 0
 	end
@@ -598,6 +635,10 @@ function combat:set_state(state)
 		self.state = 'win'
 		self.metronome:set_low_pass_filter_enabled(true)
 		self.win_ui.visible = true
+		self.win_ui.root.children[2].text = (
+			' you killed ' .. self.total_kills .. ' bats in '
+			.. string.format('%.2f', self.time_taken) .. ' seconds '
+		)
 	elseif state == 'pause' then
 		self.border_width = 20
 		self.state = 'pause'

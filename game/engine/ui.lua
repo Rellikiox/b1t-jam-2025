@@ -438,7 +438,9 @@ local Label = Node:extend()
 function Label:new(args)
 	Node.new(self, args)
 	self.text = args.text or ''
+end
 
+function Label:calculate_size()
 	self.width = self.style.font:getWidth(self.text)
 	self.height = self.style.font:getHeight()
 end
