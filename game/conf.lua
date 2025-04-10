@@ -20,7 +20,7 @@ function love.conf(t)
 	t.audio.mic             = false
 	t.audio.mixwithsystem   = true
 
-	t.window.title          = "Card RTS"
+	t.window.title          = "Realm of the Bat"
 	t.window.icon           = nil
 	t.window.width          = 1280
 	t.window.height         = 720

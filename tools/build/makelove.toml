@@ -1,4 +1,4 @@
-name = "survive-the-beat"
+name = "realm-of-the-bat"
 default_targets = ["win32", "macos", "lovejs"]
 build_directory = "../builds"
 love_files = [

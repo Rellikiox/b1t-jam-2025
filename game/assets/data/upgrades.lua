@@ -59,8 +59,8 @@ return {
 		end
 	},
 	multinote = {
-		name = 'Multinote',
-		description = 'Attacks an additional enemy on every successful hit.',
+		name = 'multinote',
+		description = 'attacks an additional enemy on every successful hit.',
 		icon = "multinote",
 
 		on_selected = function(combat)

@@ -44,19 +44,13 @@ function main_menu:enter(previous, ...)
 			justify = ui.Justify.Center,
 			separation = 10,
 			ui.Label {
-				text = 'does a mere human dare to',
+				text = 'does a mere human dare enter the',
 				style = {
 					font = SmallFont,
 				}
 			},
 			ui.Label {
-				text = 'enter the realm of the bat and',
-				style = {
-					font = MediumFont,
-				}
-			},
-			ui.Label {
-				text = 'Survive the Beat',
+				text = '~ realm of the bat ~',
 				style = {
 					font = HugeFont,
 				}
@@ -65,7 +59,7 @@ function main_menu:enter(previous, ...)
 				padding = ui.Padding(20)
 			},
 			ui.Label {
-				text = '  summon the bats...  ',
+				text = '  choose your fate...  ',
 				style = {
 					font = MediumFont,
 				}
